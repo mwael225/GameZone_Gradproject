@@ -7,18 +7,18 @@ public class Screw :CardGame
     string prefabpath = "Prefabs/Screw_CardDeck";
     public Screw() : base("Screw", 4)
     {
-    oldscale =new Vector3(150,225.000015f,0.540000081f);
+    oldscale =new Vector3(150,225,0.540000081f);
     playerrotations = new List<Vector3>
             {
                 new Vector3(0, 0, 0), new Vector3(0, 0, -90), new Vector3(0,0 ,180 ), new Vector3(0, 0, 90)
             };
 
-        setupposition();
         GameObjects=prefabtoGamebojects(prefabpath);
         shuffledeck(GameObjects);
         DealCards(4);
-        MovetoPostion();
         Assemble(deck);
+        setupposition();
+        MovetoPostion();
     }
     public override void DealCards(int numberofcards)
     {

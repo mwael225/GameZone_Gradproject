@@ -7,13 +7,11 @@ namespace GameSystem
         Screw screw;
         public void Start()
         {
-            Debug.Log("hello");
             screw = new Screw();
         }
         public void Update()
         {
-            Debug.Log("hello");
-            StartCoroutine(screw.navigatedCards());
+            //StartCoroutine(screw.navigatedCards());
         }
     }
 }
