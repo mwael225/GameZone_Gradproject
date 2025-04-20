@@ -13,7 +13,6 @@ namespace GameSystem
         //protected DB_Manager db_manager;
 
         protected List<GameObject> GameObjects;
-        
 
         public Game(string name, int numberOfPlayers)
         {

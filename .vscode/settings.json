@@ -51,6 +51,6 @@
         "temp/": true,
         "Temp/": true
     },
-    "dotnet.defaultSolution": "GameZone.sln",
+    "dotnet.defaultSolution": "GameZone_Gradproject.sln",
     "dotnet.preferCSharpExtension": true
 }

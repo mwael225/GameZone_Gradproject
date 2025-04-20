@@ -17,6 +17,7 @@ public class Dominos:CardGame
         discard_pilespcaing.Add(new Vector3(0.7f/5,0,0));
         centralpileLocalpos.Add(new Vector3(0,0,0));
         centralpileLocalpos.Add(new Vector3(0,0,0));
+        discardpileRotation = new Vector3 (-90,0,0);
         playerrotations = new List<Vector3> 
         {
             new Vector3(0, 0, 0), new Vector3(0, 90, 0), new Vector3(0, 180, 0), new Vector3(0, -90, 0)
