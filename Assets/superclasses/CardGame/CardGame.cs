@@ -4,6 +4,7 @@ using System;
 using System.Collections;
 using System.Linq;
 
+
 namespace GameSystem
 {
     public class CardGame : Game
@@ -15,7 +16,7 @@ namespace GameSystem
         public LinkedList<GameObject> centralPile;
         protected List<List<Vector3>> handspostions ;
         public List<List<GameObject>> hands;
-        protected Vector3 oldscale ;
+        public Vector3 oldscale,discardpileRotation ;
         protected List<Vector3> centralpileLocalpos ;
         public int cplayer,navigatedCardindex = 0;
         public List<int> selectedCardsindex ;
@@ -76,9 +77,11 @@ namespace GameSystem
             {
                 for (int i = 0; i < numberOfPlayers; i++)
                 {
-
+                    if(deck.Count!=0)
+                    {
                     hands[i].Add(deck[deck.Count - 1]);
                     deck.RemoveAt(deck.Count - 1);  
+                    }
                 }
             }
             Assemble(deck);
@@ -120,13 +123,21 @@ namespace GameSystem
             {
                 yield break;
             }
-
+    
             for(int i =0;i<hands[currentPlayer].Count;i++)
                 {
-                    if(!selectedCardsindex.Contains(i))
+                    if(selectedCardsindex!=null)
                     {
-                    hands[currentPlayer][i].transform.localScale = oldscale;
-                    hands[currentPlayer][i].GetComponent<Renderer>().material.color = Color.white;
+                        if(!selectedCardsindex.Contains(i))
+                        {
+                        hands[currentPlayer][i].transform.localScale = oldscale;
+                        hands[currentPlayer][i].GetComponent<Renderer>().material.color = Color.white;
+                        }
+                    }
+                    else
+                    {
+                        hands[currentPlayer][i].transform.localScale = oldscale;
+                        hands[currentPlayer][i].GetComponent<Renderer>().material.color = Color.white;
                     }
                 }
             
@@ -138,11 +149,22 @@ namespace GameSystem
                 {
                     navigatedCardindex = (navigatedCardindex + 1) % hands[currentPlayer].Count;
                 }
-            if(!selectedCardsindex.Contains(navigatedCardindex))
+            if(selectedCardsindex!=null)
             {
-            GameObject navigatedCard = hands[currentPlayer][navigatedCardindex];
-            navigatedCard.transform.localScale = oldscale * 1.2f;
-            navigatedCard.GetComponent<Renderer>().material.color = Color.cyan;
+                Debug.Log("selectedCardsindex!=null");
+                if(!selectedCardsindex.Contains(navigatedCardindex))
+                {
+                GameObject navigatedCard = hands[currentPlayer][navigatedCardindex];
+                navigatedCard.transform.localScale = oldscale * 1.2f;
+                navigatedCard.GetComponent<Renderer>().material.color = Color.cyan;
+                }
+            }
+            else
+            {
+                Debug.Log("selectedCardsindex==null");
+                GameObject navigatedCard = hands[currentPlayer][navigatedCardindex];
+                navigatedCard.transform.localScale = oldscale * 1.2f;
+                navigatedCard.GetComponent<Renderer>().material.color = Color.cyan;
             }
             yield return null;
         }
@@ -171,7 +193,13 @@ namespace GameSystem
             centralpileLocalpos[1]-=discard_pilespcaing[1];
             card.transform.localPosition = centralpileLocalpos[1];
             }
-            card.transform.Rotate(-90,0,0);
+            card.transform.localRotation = Quaternion.Euler(discardpileRotation);
+        }
+        public virtual int Zangles()
+        {
+            System.Random random = new System.Random();
+            int number=random.Next(-15, 15);
+            return number;
         }
                 
     }
