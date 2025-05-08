@@ -10,7 +10,7 @@ public class CameraControl
 
     public CameraControl()
     {
-
+        
     }
 }
 

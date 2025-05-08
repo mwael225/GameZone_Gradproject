@@ -1,6 +1,4 @@
 ﻿using UnityEngine;
-using Firebase.Database;
-using Unity.Mathematics;
 using System.Collections.Generic;
 namespace GameSystem
 {
@@ -8,7 +6,6 @@ namespace GameSystem
     {
         protected string name;
         public int numberOfPlayers;
-        protected NetworkManager networkManager;
         
         //protected DB_Manager db_manager;
 
