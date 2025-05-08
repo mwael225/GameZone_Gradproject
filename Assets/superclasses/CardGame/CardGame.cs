@@ -1,8 +1,6 @@
 using System.Collections.Generic;
 using UnityEngine;
-using System;
 using System.Collections;
-using System.Linq;
 
 
 namespace GameSystem
@@ -103,7 +101,7 @@ namespace GameSystem
         }
         }
 
-        public GameObject PickCard(int player)
+        public virtual GameObject PickCard(int player)
         {
             if (deck.Count == 0)
             {
@@ -124,7 +122,7 @@ namespace GameSystem
 
         public virtual IEnumerator navigatedCards(int currentPlayer=0)
         {
-            while (gamestate == "seeothercard"||gamestate=="choosing2")
+            while (gamestate == "seeothercard"||gamestate=="choosing2"||gamestate =="lookaround")
             {
                 //hands[currentPlayer][navigatedCardindex].transform.localScale = oldscale;
                 //hands[currentPlayer][navigatedCardindex].GetComponent<Renderer>().material.color = Color.white;

@@ -10,8 +10,8 @@ namespace GameSystem
         Screw screw;
         int actionnumber=-1;
         bool click = false;
-        bool screwdeclared = false;
-        int endgamecounter = 0;
+        bool screwdeclared,flag = false;
+        int endgamecounter,framecount = 0;
         
         GameObject card1, card2;
         public void Start()
@@ -23,9 +23,18 @@ namespace GameSystem
         }
         public void Update()
         {
-            //screw.scoresheet();
-            //return;
-            Debug.Log(screw.gamestate);
+            if(screwdeclared)
+            {
+                
+            }
+
+            currentTurn = NextTurn(screw.numberOfPlayers);
+            framecount++;
+            if(framecount%120==0)
+            {
+                framecount =0;
+                Debug.Log(screw.gamestate); 
+            }
             StartCoroutine(screw.navigatedCards(currentTurn));
 
             if(screw.gamestate=="seeothercard"||screw.gamestate=="choosing1"||screw.gamestate=="choosing2"||screw.gamestate=="lookaround")
@@ -45,6 +54,7 @@ namespace GameSystem
                 }
                 else
                 {
+                    if(framecount%120==0)
                     Debug.Log("you already picked a card");
                 }
                 if(!click)
@@ -68,6 +78,10 @@ namespace GameSystem
                     screw.gamestate="matching";
                 }
                 matching();
+            }
+            else if(Input.GetKeyDown(KeyCode.Alpha4))
+            {
+                screwdeclared = true;
             }
      
         }
@@ -117,7 +131,6 @@ namespace GameSystem
         private IEnumerator WaitAndAllowClickAgain(float waitTime)
         {
             Debug.Log("Waiting for " + waitTime + " seconds...");
-
             yield return new WaitForSeconds(waitTime);
             click = true;
             Debug.Log("Ready for another click!");
@@ -141,6 +154,7 @@ namespace GameSystem
             }
             else if (number ==5)
             {
+                screw.gamestate = "lookaround";
                 StartCoroutine(screw.lookaround(player));
             }
             else 
@@ -170,9 +184,20 @@ namespace GameSystem
         }
         public override int NextTurn(int noOfPlayers)
         {
-            screw.hands[currentTurn][screw.navigatedCardindex].transform.localScale = screw.oldscale;
-            screw.hands[currentTurn][screw.navigatedCardindex].GetComponent<Renderer>().material.color = Color.white;
-            return (currentTurn + 1) % noOfPlayers;
+
+            if(screw.gamestate!="nomral"||flag)
+            {
+                flag = true;
+                if(screw.gamestate=="normal")
+                {
+                    flag=false;
+                    screw.hands[currentTurn][screw.navigatedCardindex].transform.localScale = screw.oldscale;
+                    screw.hands[currentTurn][screw.navigatedCardindex].GetComponent<Renderer>().material.color = Color.white;
+                    currentTurn = NextTurn(screw.numberOfPlayers);
+                    return (currentTurn + 1) % noOfPlayers;
+                }
+            }
+            return currentTurn;
         }
         public void swapwplayer()
         {
@@ -214,5 +239,6 @@ namespace GameSystem
                 }
             }
         }
+        
     }
 }

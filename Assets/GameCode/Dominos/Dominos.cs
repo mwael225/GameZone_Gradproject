@@ -31,6 +31,7 @@ public class Dominos:CardGame
         };
         oldscale=new Vector3(1f,1f,1f);
         GameObjects=prefabtoGamebojects("Prefabs/DominoTable");
+        //List<GameObject>notused =prefabtoGamebojects("Prefabs/DominoBoard");
         shuffledeck(GameObjects);
         DealCards();
         setupposition();

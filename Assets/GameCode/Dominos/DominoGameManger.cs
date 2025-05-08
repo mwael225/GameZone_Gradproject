@@ -1,8 +1,5 @@
-using System;
-using System.Linq;
-using Unity.VisualScripting;
 using UnityEngine;
-using UnityEngine.UI;
+
 
 namespace GameSystem
 {
@@ -13,6 +10,7 @@ namespace GameSystem
         int[] scores={0,0,0,0};
         public void Start() 
         {
+            Instantiate(Resources.Load<GameObject>("Prefabs/DominoBoard"));
             dominos = new Dominos();
             currentTurn=firstplayer();
             Debug.Log("Current turn: " + currentTurn);

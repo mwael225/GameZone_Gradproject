@@ -1,11 +1,7 @@
 using UnityEngine;
 using GameSystem;
 using System.Collections.Generic;
-using System.Threading;
 using System.Collections;
-using System;
-using Unity.VisualScripting;
-using UnityEditor.UI;
 public class Screw :CardGame
 {
     string prefabpath = "Prefabs/Screw_CardDeck";
@@ -181,6 +177,7 @@ public class Screw :CardGame
         for(int i =0;i<hands[naviagedplayerindex].Count;i++)
         {
                 Debug.Log("player "+player);
+                Debug.Log("lookaroundcounter "+lookaroundcounter+" card: "+i);
                 hands[player+lookaroundcounter%numberOfPlayers][i].transform.localScale = oldscale;
                 hands[player+lookaroundcounter%numberOfPlayers][i].GetComponent<Renderer>().material.color = Color.white;    
         }
