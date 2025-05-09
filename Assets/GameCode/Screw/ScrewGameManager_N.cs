@@ -32,12 +32,27 @@ namespace GameSystem
             //inputHandler.setupinput(keyCodes);
             screw = new Screw_N(inputHandler);
             currentTurn = firstplayer();
-            screw.gamestate = "normal";
-            
+            screw.gamestate = "start";
+            StartCoroutine(screw.memorizecard());
         }
+        
         public void Update()
         {
             if(!IsServer)return;
+
+            if(screw.gamestate=="end")
+            {
+                Debug.Log("game ended");
+                return;
+            }
+            if(screwdeclared)
+            {
+                if(endgamecounter==4)
+                {
+                    screw.gamestate = "end";
+                    screw.scoresheet();
+                }
+            }
             currentTurn = NextTurn(screw.numberOfPlayers);
             framecount++;
             if(framecount%120==0)
@@ -92,6 +107,7 @@ namespace GameSystem
             else if(inputHandler.GetKeyDown(KeyCode.Alpha4,currentTurn))
             {
                 screwdeclared = true;
+                endgamecounter++;
             }
      
         }
@@ -203,6 +219,10 @@ namespace GameSystem
                     screw.hands[currentTurn][screw.navigatedCardindex].GetComponent<Renderer>().material.color = Color.white;
                     Debug.Log("current turn: " + currentTurn);
                     nextturnflag=false;
+                    if(screwdeclared)
+                    {
+                        endgamecounter++;
+                    }
                     return (currentTurn + 1) % noOfPlayers;
                 }
             }

@@ -13,6 +13,7 @@ namespace GameSystem
         bool click = false;
         bool screwdeclared,flag = false;
         int endgamecounter,framecount = 0;
+
         
         GameObject card1, card2;
         public void Start()
@@ -20,7 +21,7 @@ namespace GameSystem
             screw = new Screw();
             currentTurn = firstplayer();
             screw.gamestate = "normal";
-            
+            StartCoroutine(screw.memorizecard());
         }
         public void Update()
         {
@@ -78,6 +79,8 @@ namespace GameSystem
             else if(Input.GetKeyDown(KeyCode.Alpha4))
             {
                 screwdeclared = true;
+                currentTurn+= 1%screw.numberOfPlayers;
+                endgamecounter++;
             }
      
         }
@@ -180,6 +183,7 @@ namespace GameSystem
         }
         public override int NextTurn(int noOfPlayers)
         {
+
             if(flag||screw.gamestate!="normal")
             {
                 flag = true;
@@ -189,6 +193,10 @@ namespace GameSystem
                     screw.hands[currentTurn][screw.navigatedCardindex].GetComponent<Renderer>().material.color = Color.white;
                     Debug.Log("current turn: " + currentTurn);
                     flag=false;
+                    if(screwdeclared)
+                    {
+                        endgamecounter++;
+                    }
                     return (currentTurn + 1) % noOfPlayers;
                 }
             }

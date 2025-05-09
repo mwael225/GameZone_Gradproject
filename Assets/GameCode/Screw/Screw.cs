@@ -32,6 +32,27 @@ public class Screw :CardGame
         setupposition();
         MovetoPostion();
     }
+    public IEnumerator memorizecard()
+    {
+        
+        for(int i =0;i<hands.Count;i++)
+        {
+            hands[i][2].transform.Translate(0,0,1f);
+            hands[i][2].transform.localRotation = Quaternion.Euler(pickrotation[i]);
+            hands[i][3].transform.Translate(0,0,1f);
+            hands[i][3].transform.localRotation = Quaternion.Euler(pickrotation[i]);
+        }
+        yield return new WaitForSeconds(4f);
+        for(int i =0;i<hands.Count;i++)
+        {
+            hands[i][2].transform.localPosition = handspostions[i][2];
+            hands[i][2].transform.localRotation = Quaternion.Euler(playerrotations[i]);
+            hands[i][3].transform.localPosition = handspostions[i][3];
+            hands[i][3].transform.localRotation = Quaternion.Euler(playerrotations[i]);
+        }
+
+        
+    }
     public override void setupposition()
     {
         handspostions = new List<List<Vector3>>
