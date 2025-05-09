@@ -8,7 +8,7 @@ using Unity.Netcode;
 public class Dominos_N:CardGame_N
 {
     float[] coordinates = { -0.405f, -0.24f, -0.405f, -0.24f };
-    GameObject origin;
+    GameObject origin,table;
     public string where="none";
     public Dominos_N(InputHandler inputHandler):base("Dominos",4,inputHandler)
     {
@@ -31,6 +31,8 @@ public class Dominos_N:CardGame_N
         new List<Vector3> {new Vector3(-0.5f, 0, -0.24f)},
         };
         oldscale=new Vector3(1f,1f,1f);
+        table = GameObject.Instantiate(Resources.Load<GameObject>("Prefabs_N/DominoBoard_N"));
+        table.GetComponent<NetworkObject>().Spawn();
         origin = GameObject.Instantiate(Resources.Load<GameObject>("Prefabs_N/DominoTable_N"));
         origin.GetComponent<NetworkObject>().Spawn();
         GameObjects=spawnobjects("Dominos");
