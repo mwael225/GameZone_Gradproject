@@ -7,6 +7,8 @@ public class InputHandler : NetworkBehaviour
 {
     ulong clientId;
     bool iamserver;
+
+    public bool setupinputcalled = false;
     /*public InputHandler(string x="someone kill me")
     {
         Debug.Log(x);
@@ -18,6 +20,7 @@ public class InputHandler : NetworkBehaviour
         new Dictionary<string,bool>{},
         new Dictionary<string,bool>{}
     };
+    //public List<KeyCode> keyCodes = new List<KeyCode>();
     public void Start()
     {
         Debug.Log("name "+transform.name+" isserver"+IsServer);
@@ -38,7 +41,19 @@ public class InputHandler : NetworkBehaviour
         }
 
     }
-    int count = 0;
+    /*public void setupinput(List<KeyCode> keyCodes)
+    {
+        setupinputcalled = true;
+        Debug.Log("setup input called");
+        this.keyCodes = keyCodes;
+        for(int i=0;i<playerInput.Count;i++)
+        {
+            for(int j=0;j<keyCodes.Count;j++)
+            {
+                playerInput[i].Add(keyCodes[j].ToString(),false);
+            }
+        }
+    }*/
     public void Update()
     {
         if(IsOwner&&IsClient)
@@ -60,23 +75,7 @@ public class InputHandler : NetworkBehaviour
             {
                 InputGetkeyDownServerRpc(KeyCode.Space,clientId);
             }
-            if(Input.GetKeyDown(KeyCode.Alpha1))
-            {
-                InputGetkeyDownServerRpc(KeyCode.Alpha1,clientId,true);
-            }
-            else if(Input.GetKeyUp(KeyCode.Alpha1))
-            {
-                InputGetkeyDownServerRpc(KeyCode.Alpha1,clientId);
-            }
 
-            if(Input.GetKeyDown(KeyCode.Alpha2))
-            {
-                InputGetkeyDownServerRpc(KeyCode.Alpha2,clientId,true);
-            }
-            else if(Input.GetKeyUp(KeyCode.Alpha2))
-            {
-                InputGetkeyDownServerRpc(KeyCode.Alpha2,clientId);
-            }
             if(Input.GetKeyDown(KeyCode.Q))
             {
                 InputGetkeyDownServerRpc(KeyCode.Q,clientId,true);
@@ -93,12 +92,43 @@ public class InputHandler : NetworkBehaviour
             {
                 InputGetkeyDownServerRpc(KeyCode.W,clientId);
             }
+            if(Input.GetKeyDown(KeyCode.Alpha1))
+            {
+                InputGetkeyDownServerRpc(KeyCode.Alpha1,clientId,true);
+            }
+            else if(Input.GetKeyUp(KeyCode.Alpha1))
+            {
+                InputGetkeyDownServerRpc(KeyCode.Alpha2,clientId);
+            }
+            if(Input.GetKeyDown(KeyCode.Alpha2))
+            {
+                InputGetkeyDownServerRpc(KeyCode.Alpha2,clientId,true);
+            }
+            else if(Input.GetKeyUp(KeyCode.Alpha2))
+            {
+                InputGetkeyDownServerRpc(KeyCode.Alpha2,clientId);
+            }
+            if(Input.GetKeyDown(KeyCode.Alpha3))
+            {
+                InputGetkeyDownServerRpc(KeyCode.Alpha3,clientId,true);
+            }
+            else if(Input.GetKeyUp(KeyCode.Alpha3))
+            {
+                InputGetkeyDownServerRpc(KeyCode.Alpha3,clientId);
+            }
+            if(Input.GetKeyDown(KeyCode.Alpha4))
+            {
+                InputGetkeyDownServerRpc(KeyCode.Alpha4,clientId,true);
+            }
+            else if(Input.GetKeyUp(KeyCode.Alpha4))
+            {
+                InputGetkeyDownServerRpc(KeyCode.Alpha4,clientId);
+            }
         }
 
     }
     public void Keymap()
     {
-        string key= "";
         if(transform.name=="GameManager_N(Clone)"&&IsServer)
         {
             Debug.Log("real Keymap started");
@@ -108,14 +138,15 @@ public class InputHandler : NetworkBehaviour
 
         for(int i=0;i<playerInput.Count;i++)
             {
-                key= KeyCode.Return.ToString();
-                Debug.Log(key);
                 playerInput[i].Add(KeyCode.Return.ToString(),false);
                 playerInput[i].Add(KeyCode.Space.ToString(),false);
-                playerInput[i].Add(KeyCode.Alpha1.ToString(),false);
-                playerInput[i].Add(KeyCode.Alpha2.ToString(),false);
                 playerInput[i].Add(KeyCode.Q.ToString(),false);
                 playerInput[i].Add(KeyCode.W.ToString(),false);
+                playerInput[i].Add(KeyCode.Alpha1.ToString(),false);
+                playerInput[i].Add(KeyCode.Alpha2.ToString(),false);
+                playerInput[i].Add(KeyCode.Alpha3.ToString(),false);
+                playerInput[i].Add(KeyCode.Alpha4.ToString(),false);
+
             }
     }
     [ServerRpc]

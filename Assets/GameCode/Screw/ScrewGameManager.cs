@@ -3,6 +3,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine.Android;
+using Unity.VisualScripting;
 namespace GameSystem    
 {
     public class ScrewGameManager:GameManager
@@ -23,11 +24,6 @@ namespace GameSystem
         }
         public void Update()
         {
-            if(screwdeclared)
-            {
-                
-            }
-
             currentTurn = NextTurn(screw.numberOfPlayers);
             framecount++;
             if(framecount%120==0)
@@ -184,16 +180,15 @@ namespace GameSystem
         }
         public override int NextTurn(int noOfPlayers)
         {
-
-            if(screw.gamestate!="nomral"||flag)
+            if(flag||screw.gamestate!="normal")
             {
                 flag = true;
                 if(screw.gamestate=="normal")
                 {
-                    flag=false;
                     screw.hands[currentTurn][screw.navigatedCardindex].transform.localScale = screw.oldscale;
                     screw.hands[currentTurn][screw.navigatedCardindex].GetComponent<Renderer>().material.color = Color.white;
-                    currentTurn = NextTurn(screw.numberOfPlayers);
+                    Debug.Log("current turn: " + currentTurn);
+                    flag=false;
                     return (currentTurn + 1) % noOfPlayers;
                 }
             }

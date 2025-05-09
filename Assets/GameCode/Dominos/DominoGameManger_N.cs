@@ -14,8 +14,6 @@ namespace GameSystem
             if(IsServer)  
             {
             inputHandler = GetComponent<InputHandler>();
-            GameObject instance =Instantiate(Resources.Load<GameObject>("Prefabs_N/DominoBoard_N"));
-            instance.GetComponent<NetworkObject>().Spawn();
             dominos = new Dominos_N(inputHandler);
             currentTurn=firstplayer();
             Debug.Log("Current turn: " + currentTurn);
