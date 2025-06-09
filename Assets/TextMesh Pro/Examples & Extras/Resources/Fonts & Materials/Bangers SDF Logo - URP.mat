@@ -130,7 +130,7 @@ Material:
     - _FaceColor: {r: 1, g: 1, b: 1, a: 1}
     - _FaceUVSpeed: {r: 0, g: 0, b: 0, a: 0}
     - _GlowColor: {r: 1, g: 0.6344826, b: 0, a: 0.5019608}
-    - _IsoPerimeter: {r: -0.6, g: 0, b: 0.428, a: 0}
+    - _IsoPerimeter: {r: -1, g: -1, b: -1, a: 0}
     - _MaskCoord: {r: 0, g: 0, b: 0, a: 0}
     - _OutlineColor: {r: 1, g: 1, b: 1, a: 1}
     - _OutlineColor1: {r: 1, g: 1, b: 1, a: 1}

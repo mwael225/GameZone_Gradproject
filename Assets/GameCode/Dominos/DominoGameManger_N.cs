@@ -9,16 +9,16 @@ namespace GameSystem
         //enum Gamestate gamestate ={navitgaing,choosing}
         InputHandler inputHandler;
         int[] scores={0,0,0,0};
-        public void Start() 
+        public void Start()
         {
-            if(IsServer)  
+            if (IsServer)
             {
-            inputHandler = GetComponent<InputHandler>();
-            dominos = new Dominos_N(inputHandler);
-            currentTurn=firstplayer();
-            Debug.Log("Current turn: " + currentTurn);
+                inputHandler = GetComponent<InputHandler>();
+                dominos = new Dominos_N(inputHandler);
+                currentTurn = firstplayer();
+                Debug.Log("Current turn: " + currentTurn);
             }
-            
+
         }
         public override int firstplayer()
         {
