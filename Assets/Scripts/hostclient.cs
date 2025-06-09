@@ -1,35 +1,91 @@
 using UnityEngine;
 using Unity.Netcode;
 using UnityEngine.UI;
+using System.Threading.Tasks;
+using Unity.Services.Core;
+using Unity.Services.Authentication;
+using Unity.Services.Multiplayer;
+using Unity.Services.Relay;
+using Unity.Services.Relay.Models;
+using Unity.Netcode.Transports.UTP;
+using TMPro;
+using Unity.Networking.Transport.Relay;
+using Unity.VisualScripting;
+
 public class hostclient : MonoBehaviour
 {
-    public Button startHostButton; // Reference to the button in the UI
-    public Button startClientButton; // Reference to the button in the UI
+    [Header("UI References")]
+    public Button startHostButton;
+    public Button startClientButton;
+    public TMP_InputField joinCodeInput;
+    public TMP_Text joinCodeDisplay;
 
-    public GameObject spawner; // Reference to the player prefab
-    void Start()
+    private async void Awake()
     {
-        
-    }
-    void Update()
-    {
-        //Debug.Log("Number of connected clients: " + NetworkManager.Singleton.ConnectedClients.Count);
+        // Initialize Unity Services
+        await UnityServices.InitializeAsync();
+
+        // Sign in anonymously
+        if (!AuthenticationService.Instance.IsSignedIn)
+        {
+            await AuthenticationService.Instance.SignInAnonymouslyAsync();
+            Debug.Log("Signed in as: " + AuthenticationService.Instance.PlayerId);
+        }
+
+        // Add button listeners
+        startHostButton.onClick.AddListener(() =>
+        {
+            StartHostWithRelay(4, "udp").ContinueWith(task =>
+            {
+                if (task.IsCompletedSuccessfully)
+                {
+                    joinCodeDisplay.text = "Join Code: " + task.Result;
+                }
+                else
+                {
+                    Debug.LogError("Failed to start host: " + task.Exception);
+                }
+            });
+        });
+        startClientButton.onClick.AddListener(() =>
+        {
+            StartClientWithRelay(joinCodeInput.text, "udp").ContinueWith(task =>
+            {
+                if (task.IsCompletedSuccessfully && task.Result)
+                {
+                    Debug.Log("Client started successfully.");
+                }
+                else
+                {
+                    Debug.LogError("Failed to start client: " + task.Exception);
+                }
+            });
+        });
     }
 
-    void Awake()
+    public async Task<string> StartHostWithRelay(int maxConnections, string connectionType)
     {
-        startHostButton.onClick.AddListener(starthost); // Add listener to the button
-        startClientButton.onClick.AddListener(startclient); // Add listener to the button
-    }
-    void starthost()
-    {
-        NetworkManager.Singleton.StartHost();  
-        Debug.Log("Host started."); 
-    }
-    void startclient()
-    {
-        NetworkManager.Singleton.StartClient();  
-        Debug.Log("Client started."); 
+        await UnityServices.InitializeAsync();
+        if (!AuthenticationService.Instance.IsSignedIn)
+        {
+            await AuthenticationService.Instance.SignInAnonymouslyAsync();
+        }
+        var allocation = await RelayService.Instance.CreateAllocationAsync(maxConnections);
+        NetworkManager.Singleton.GetComponent<UnityTransport>().SetRelayServerData(AllocationUtils.ToRelayServerData(allocation, connectionType));
+        var joinCode = await RelayService.Instance.GetJoinCodeAsync(allocation.AllocationId);
+        joinCodeDisplay.text = "Join Code: " + joinCode;
+        return NetworkManager.Singleton.StartHost() ? joinCode : null;
     }
 
+    public async Task<bool> StartClientWithRelay(string joinCode, string connectionType)
+    {
+        await UnityServices.InitializeAsync();
+        if (!AuthenticationService.Instance.IsSignedIn)
+        {
+            await AuthenticationService.Instance.SignInAnonymouslyAsync();
+        }
+        var allocation = await RelayService.Instance.JoinAllocationAsync(joinCode: joinCode);
+        NetworkManager.Singleton.GetComponent<UnityTransport>().SetRelayServerData(AllocationUtils.ToRelayServerData(allocation, connectionType));
+        return !string.IsNullOrEmpty(joinCode) && NetworkManager.Singleton.StartClient();
+    }
 }

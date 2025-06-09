@@ -7,7 +7,6 @@ public class spawnplayers : NetworkBehaviour
     // Start is called once before the first execution of Update after the MonoBehaviour is created
     public List<GameObject> playerPrefabs = new List<GameObject>();
     public GameObject gameMangagerPrefab;
-    bool hasrun = false;
 
     void Start()
     {
@@ -58,7 +57,6 @@ public class spawnplayers : NetworkBehaviour
     }
     void OnConnectionApproval(NetworkManager.ConnectionApprovalRequest request, NetworkManager.ConnectionApprovalResponse response)
     {
-
         if(NetworkManager.Singleton.ConnectedClients.Count >=4)
         {
             Debug.Log("Connection approval denied. Maximum number of players reached.");
@@ -69,9 +67,7 @@ public class spawnplayers : NetworkBehaviour
         {
         Debug.Log("Connection approved");
         response.Approved = true;
-        }
-        
-        
+        }    
     }     
 
 

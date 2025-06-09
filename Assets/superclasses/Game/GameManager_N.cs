@@ -6,18 +6,9 @@ namespace GameSystem
     {
         protected int currentTurn;
 
-        public virtual void StartGame()
-        {
-
-        }
-
         public virtual void EndGame()
         {
             
-        }
-        public virtual void playerturn(int player)
-        {
-
         }
 
         public virtual int NextTurn(int noOfPlayers)

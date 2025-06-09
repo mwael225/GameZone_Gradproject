@@ -27,7 +27,7 @@ public class MouseLook : MonoBehaviour
 
     void Update()
     {
-        HandleMouseLook();
+        HandleMouseLook();        
     }
 
     private void HandleMouseLook()
