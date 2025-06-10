@@ -23,6 +23,7 @@ public class InputHandler : NetworkBehaviour
     //public List<KeyCode> keyCodes = new List<KeyCode>();
     public void Start()
     {
+        
         Debug.Log("name "+transform.name+" isserver"+IsServer);
         clientId = NetworkManager.Singleton.LocalClientId;
         if(IsClient)
@@ -146,7 +147,6 @@ public class InputHandler : NetworkBehaviour
                 playerInput[i].Add(KeyCode.Alpha2.ToString(),false);
                 playerInput[i].Add(KeyCode.Alpha3.ToString(),false);
                 playerInput[i].Add(KeyCode.Alpha4.ToString(),false);
-
             }
     }
     [ServerRpc]

@@ -5,16 +5,11 @@ public class headmovment : MonoBehaviour
 
     public float sensitivityX = 2.0f; // Horizontal sensitivity
     public float sensitivityY = 2.0f; // Vertical sensitivity
-
-
     public float minimumY = -60.0f;   // Minimum vertical angle
     public float maximumY = 60.0f;    // Maximum vertical angle
     public float minimumX = -60.0f;   // Minimum horizontal angle
     public float maximumX = 60.0f;    // Maximum horizontal angle
-
-
     public float moveSpeed = 10f;     // Scroll movement speed
-
     private float rotationX = 0f;   // Current horizontal rotation
     private float rotationY = 0f;    // Current vertical rotation
 

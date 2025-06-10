@@ -10,7 +10,7 @@ public class MenuManager1 : MonoBehaviour
     public List<TMP_Text> menuItems = new List<TMP_Text>();
     public GameObject menuPanel;
     Color oldcolor;
-    int navindex=0;
+    int navindex = 0;
     void Start()
     {
         oldcolor = menuItems[0].color;
@@ -33,12 +33,13 @@ public class MenuManager1 : MonoBehaviour
         }
         if (Input.GetKeyDown(KeyCode.Return))
         {
-            menuPanel.SetActive(false); // Hide the menu panel when Enter is pressed
+            choosegame();
+
         }
     }
     void updateMenu()
     {
-        for(int i = 0; i < menuItems.Count; i++)
+        for (int i = 0; i < menuItems.Count; i++)
         {
             if (i == navindex)
             {
@@ -49,5 +50,9 @@ public class MenuManager1 : MonoBehaviour
                 menuItems[i].color = oldcolor; // Reset color for unselected items
             }
         }
+    }
+    void choosegame()
+    {
+        
     }
 }

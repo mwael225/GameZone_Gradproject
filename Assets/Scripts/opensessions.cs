@@ -24,11 +24,9 @@ public class opensessions : MonoBehaviour
 
             createButton.onClick.AddListener(() => createlobby());
 
-            joinbutton.onClick.AddListener(() => listlobies());
+            joinbutton.onClick.AddListener(() => listlobbies());
 
     }
-
-
 
     void CreateButtons(List<Lobby> lobbies = null)
     {
@@ -62,7 +60,7 @@ public class opensessions : MonoBehaviour
             }
         }
     }
-    public async void listlobies()
+    public async void listlobbies()
     {
         QueryResponse response = await LobbyService.Instance.QueryLobbiesAsync();
         if (response.Results.Count > 0)

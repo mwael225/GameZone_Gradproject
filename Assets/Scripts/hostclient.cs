@@ -11,6 +11,7 @@ using Unity.Netcode.Transports.UTP;
 using TMPro;
 using Unity.Networking.Transport.Relay;
 using Unity.VisualScripting;
+using System;
 
 public class hostclient : MonoBehaviour
 {
@@ -18,6 +19,7 @@ public class hostclient : MonoBehaviour
     public Button startHostButton;
     public Button startClientButton;
     public TMP_InputField joinCodeInput;
+    public GameObject canvas;
     public TMP_Text joinCodeDisplay;
 
     private async void Awake()
@@ -35,11 +37,12 @@ public class hostclient : MonoBehaviour
         // Add button listeners
         startHostButton.onClick.AddListener(() =>
         {
-            StartHostWithRelay(4, "udp").ContinueWith(task =>
+            StartHostWithRelay(3, "udp").ContinueWith(task =>
             {
                 if (task.IsCompletedSuccessfully)
                 {
                     joinCodeDisplay.text = "Join Code: " + task.Result;
+                    Button startButton = startHostButton.GetComponent<Button>();
                 }
                 else
                 {
@@ -54,6 +57,8 @@ public class hostclient : MonoBehaviour
                 if (task.IsCompletedSuccessfully && task.Result)
                 {
                     Debug.Log("Client started successfully.");
+                    canvas.SetActive(false);  // Hide the canvas after starting the client
+                     // Hide the canvas after starting the client
                 }
                 else
                 {
@@ -74,6 +79,7 @@ public class hostclient : MonoBehaviour
         NetworkManager.Singleton.GetComponent<UnityTransport>().SetRelayServerData(AllocationUtils.ToRelayServerData(allocation, connectionType));
         var joinCode = await RelayService.Instance.GetJoinCodeAsync(allocation.AllocationId);
         joinCodeDisplay.text = "Join Code: " + joinCode;
+        GUIUtility.systemCopyBuffer = joinCode;
         return NetworkManager.Singleton.StartHost() ? joinCode : null;
     }
 
