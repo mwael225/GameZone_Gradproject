@@ -68,7 +68,10 @@ namespace GameSystem
             }
             else if(screw.gamestate=="action"||screw.gamestate == "Swapping1"||screw.gamestate == "picking"||inputHandler.GetKeyDown(KeyCode.Alpha1,currentTurn))
             {
-                if(screw.gamestate=="normal")
+                if(screw.gamestate=="normal"||screw.gamestate=="start")
+                {
+                    screw.gamestate = "normal";
+                }
                 {
                     screw.gamestate = "picking";
                 }

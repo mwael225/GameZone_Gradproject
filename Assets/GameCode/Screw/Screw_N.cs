@@ -48,7 +48,7 @@ public class Screw_N :CardGame_N
             hands[i][3].transform.Translate(0,0,1f);
             hands[i][3].transform.localRotation = Quaternion.Euler(pickrotation[i]);
         }
-        yield return new WaitForSeconds(4f);
+        yield return new WaitForSeconds(10f);
         for(int i =0;i<hands.Count;i++)
         {
             hands[i][2].transform.localPosition = handspostions[i][2];
