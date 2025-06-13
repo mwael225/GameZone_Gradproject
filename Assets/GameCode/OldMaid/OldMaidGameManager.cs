@@ -1,3 +1,4 @@
+//OldMaidGameManager.cs
 using System.Collections.Generic;
 using UnityEngine;
 using GameSystem;
@@ -5,12 +6,46 @@ using GameSystem;
 public class OldMaidGameManager : MonoBehaviour
 {
     OldMaid oldmaid;
-    private int navigatedCardIndexLeft = 0; // Separate index for left player's hand navigation
+    private int navigatedCardIndexTarget = 0; // Index for target player's hand navigation
+    [SerializeField] private Camera[] playerCameras; // Array to hold references to the four player cameras
 
     public void Start()
     {
         oldmaid = new OldMaid();
-        Debug.Log("Old Maid game started. Player " + oldmaid.cplayer + "'s turn. Navigate Player " + oldmaid.GetLeftPlayer(oldmaid.cplayer) + "'s cards with Q/W, select with S.");
+
+        // Initialize cameras
+        if (playerCameras == null || playerCameras.Length != 4)
+        {
+            // Fallback: Find cameras by name
+            playerCameras = new Camera[4];
+            for (int i = 0; i < 4; i++)
+            {
+                GameObject camObj = GameObject.Find("Player" + i + "Camera");
+                if (camObj != null)
+                {
+                    playerCameras[i] = camObj.GetComponent<Camera>();
+                }
+            }
+
+            // Check if all cameras were found
+            if (playerCameras[0] == null || playerCameras[1] == null || playerCameras[2] == null || playerCameras[3] == null)
+            {
+                Debug.LogError("Could not find all player cameras (Player0Camera, Player1Camera, Player2Camera, Player3Camera). Please assign them in the Inspector or ensure they exist in the scene!");
+                return;
+            }
+        }
+
+        SwitchToPlayerCamera(oldmaid.cplayer); // Set initial camera to Player 0
+        int targetPlayer = oldmaid.GetNextPlayerWithCards(oldmaid.cplayer);
+        if (targetPlayer != -1)
+        {
+            Debug.Log("Old Maid game started. Player " + oldmaid.cplayer + "'s turn. Navigate Player " + targetPlayer + "'s cards with Q/W, select with S.");
+        }
+        else
+        {
+            Debug.Log("Old Maid game started. Player " + oldmaid.cplayer + "'s turn. No other players have cards - moving to merging phase.");
+            oldmaid.gamestate = "merging";
+        }
     }
 
     public void Update()
@@ -39,6 +74,9 @@ public class OldMaidGameManager : MonoBehaviour
         {
             HandleSwappingInput();
         }
+
+        // Handle shuffle input - available during both phases but only for current player's turn
+        HandleShuffleInput();
     }
 
     private void HandleMergingInput()
@@ -67,6 +105,7 @@ public class OldMaidGameManager : MonoBehaviour
         {
             Debug.Log("Player " + oldmaid.cplayer + " ending turn");
             oldmaid.EndTurn();
+            SwitchToPlayerCamera(oldmaid.cplayer); // Switch to the next player's camera
         }
 
         // Optional: Use Escape key to clear all selections
@@ -78,10 +117,10 @@ public class OldMaidGameManager : MonoBehaviour
 
     private void HandleSwappingInput()
     {
-        // Use S key to swap card from left player
+        // Use S key to swap card from target player
         if (Input.GetKeyDown(KeyCode.S))
         {
-            SelectCardFromLeftPlayer();
+            SelectCardFromTargetPlayer();
         }
 
         // Optional: Display game info
@@ -91,63 +130,68 @@ public class OldMaidGameManager : MonoBehaviour
         }
     }
 
-    private void SelectCardFromLeftPlayer()
+    private void HandleShuffleInput()
     {
-        int leftPlayer = oldmaid.GetLeftPlayer(oldmaid.cplayer);
-
-        if (oldmaid.hands[leftPlayer].Count == 0)
+        // Use R key to shuffle current player's hand
+        if (Input.GetKeyDown(KeyCode.R))
         {
-            Debug.Log("Left player has no cards! Moving to merging phase.");
+            oldmaid.ShufflePlayerHand(oldmaid.cplayer);
+        }
+    }
+
+    private void SelectCardFromTargetPlayer()
+    {
+        int targetPlayer = oldmaid.GetNextPlayerWithCards(oldmaid.cplayer);
+
+        if (targetPlayer == -1)
+        {
+            Debug.Log("No other players have cards! Moving to merging phase.");
             oldmaid.gamestate = "merging";
+            oldmaid.areLeftPlayerCardsDisplayed = false;
             return;
         }
 
-        if (navigatedCardIndexLeft >= oldmaid.hands[leftPlayer].Count)
+        if (navigatedCardIndexTarget >= oldmaid.hands[targetPlayer].Count)
         {
-            navigatedCardIndexLeft = oldmaid.hands[leftPlayer].Count - 1;
+            navigatedCardIndexTarget = oldmaid.hands[targetPlayer].Count - 1;
         }
 
-        oldmaid.navigatedCardindex = navigatedCardIndexLeft;
-        oldmaid.SwapCardFromLeft(oldmaid.cplayer, navigatedCardIndexLeft);
+        oldmaid.navigatedCardindex = navigatedCardIndexTarget;
+        oldmaid.SelectCardFromTargetPlayer(oldmaid.cplayer);
     }
 
     private void HandleSwappingNavigation()
     {
-        int leftPlayer = oldmaid.GetLeftPlayer(oldmaid.cplayer);
+        if (oldmaid.gamestate != "swapping") return; // Skip if not in swapping phase
 
-        if (oldmaid.hands[leftPlayer].Count == 0)
+        int targetPlayer = oldmaid.GetNextPlayerWithCards(oldmaid.cplayer);
+
+        if (targetPlayer == -1)
         {
-            Debug.Log("Left player has no cards! Moving to merging phase.");
+            Debug.Log("No other players have cards! Moving to merging phase.");
             oldmaid.gamestate = "merging";
+            oldmaid.areLeftPlayerCardsDisplayed = false;
             return;
         }
 
-        // Reset visual states
-        for (int i = 0; i < oldmaid.hands[leftPlayer].Count; i++)
-        {
-            oldmaid.hands[leftPlayer][i].transform.localScale = oldmaid.oldscale;
-            oldmaid.hands[leftPlayer][i].GetComponent<Renderer>().material.color = Color.white;
-        }
-
         // Handle navigation with Q/W
+        bool navigationChanged = false;
         if (Input.GetKeyDown(KeyCode.Q))
         {
-            navigatedCardIndexLeft = (navigatedCardIndexLeft - 1 + oldmaid.hands[leftPlayer].Count) % oldmaid.hands[leftPlayer].Count;
+            navigatedCardIndexTarget = (navigatedCardIndexTarget - 1 + oldmaid.hands[targetPlayer].Count) % oldmaid.hands[targetPlayer].Count;
+            navigationChanged = true;
         }
         else if (Input.GetKeyDown(KeyCode.W))
         {
-            navigatedCardIndexLeft = (navigatedCardIndexLeft + 1) % oldmaid.hands[leftPlayer].Count;
+            navigatedCardIndexTarget = (navigatedCardIndexTarget + 1) % oldmaid.hands[targetPlayer].Count;
+            navigationChanged = true;
         }
 
-        // Update navigatedCardindex in OldMaid to reflect the left player's hand
-        oldmaid.navigatedCardindex = navigatedCardIndexLeft;
-
-        // Highlight the navigated card
-        if (navigatedCardIndexLeft < oldmaid.hands[leftPlayer].Count)
+        if (navigationChanged)
         {
-            GameObject navigatedCard = oldmaid.hands[leftPlayer][navigatedCardIndexLeft];
-            navigatedCard.transform.localScale = oldmaid.oldscale * 1.2f;
-            navigatedCard.GetComponent<Renderer>().material.color = Color.cyan;
+            oldmaid.navigatedCardindex = navigatedCardIndexTarget;
+            // Only highlight the navigated card, don't move any cards
+            oldmaid.HighlightTargetPlayerCard(targetPlayer, navigatedCardIndexTarget);
         }
     }
 
@@ -182,9 +226,16 @@ public class OldMaidGameManager : MonoBehaviour
         }
         else if (oldmaid.gamestate == "swapping")
         {
-            int leftPlayer = oldmaid.GetLeftPlayer(oldmaid.cplayer);
-            Debug.Log("Swapping card from Player " + leftPlayer + " (left player)");
-            Debug.Log("Left player has " + oldmaid.hands[leftPlayer].Count + " cards");
+            int targetPlayer = oldmaid.GetNextPlayerWithCards(oldmaid.cplayer);
+            if (targetPlayer != -1)
+            {
+                Debug.Log("Swapping card from Player " + targetPlayer + " (target player)");
+                Debug.Log("Target player has " + oldmaid.hands[targetPlayer].Count + " cards");
+            }
+            else
+            {
+                Debug.Log("No other players have cards to swap from");
+            }
         }
 
         for (int i = 0; i < oldmaid.numberOfPlayers; i++)
@@ -192,6 +243,44 @@ public class OldMaidGameManager : MonoBehaviour
             Debug.Log("Player " + i + ": " + oldmaid.hands[i].Count + " cards");
         }
 
+        Debug.Log("Controls:");
+        Debug.Log("- Q/W: Navigate cards");
+        Debug.Log("- Space: Select/deselect cards (merging phase)");
+        Debug.Log("- M: Merge selected cards");
+        Debug.Log("- S: Swap card from target player (swapping phase)");
+        Debug.Log("- R: Shuffle your hand");
+        Debug.Log("- Alt: End turn");
+        Debug.Log("- I: Display game info");
         Debug.Log("================");
+    }
+
+    // Method to switch to the current player's camera
+    private void SwitchToPlayerCamera(int playerIndex)
+    {
+        if (playerCameras == null || playerCameras.Length != 4)
+        {
+            Debug.LogError("Player cameras not properly assigned!");
+            return;
+        }
+
+        // Disable all cameras
+        for (int i = 0; i < playerCameras.Length; i++)
+        {
+            if (playerCameras[i] != null)
+            {
+                playerCameras[i].enabled = false;
+            }
+        }
+
+        // Enable the current player's camera
+        if (playerCameras[playerIndex] != null)
+        {
+            playerCameras[playerIndex].enabled = true;
+            Debug.Log("Switched to Player " + playerIndex + "'s camera");
+        }
+        else
+        {
+            Debug.LogError("Camera for Player " + playerIndex + " is null!");
+        }
     }
 }
