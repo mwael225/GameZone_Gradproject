@@ -74,6 +74,7 @@ public class hostclient : MonoBehaviour
         NetworkManager.Singleton.GetComponent<UnityTransport>().SetRelayServerData(AllocationUtils.ToRelayServerData(allocation, connectionType));
         var joinCode = await RelayService.Instance.GetJoinCodeAsync(allocation.AllocationId);
         joinCodeDisplay.text = "Join Code: " + joinCode;
+        Debug.Log("Join Code: " + joinCode);
         return NetworkManager.Singleton.StartHost() ? joinCode : null;
     }
 

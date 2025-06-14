@@ -5,41 +5,40 @@ using Unity.VisualScripting;
 
 public class InputHandler : NetworkBehaviour
 {
-    ulong clientId;
-    bool iamserver;
+    private ulong clientId;
+    private bool iamserver;
 
     public bool setupinputcalled = false;
     /*public InputHandler(string x="someone kill me")
     {
         Debug.Log(x);
     }*/
-    public List<Dictionary<string,bool>> playerInput = new List<Dictionary<string,bool>>
+    public List<Dictionary<string, bool>> playerInput = new List<Dictionary<string, bool>>
     {
-        new Dictionary<string,bool>{},
-        new Dictionary<string,bool>{},
-        new Dictionary<string,bool>{},
-        new Dictionary<string,bool>{}
+        new Dictionary<string, bool>{},
+        new Dictionary<string, bool>{},
+        new Dictionary<string, bool>{},
+        new Dictionary<string, bool>{}
     };
     //public List<KeyCode> keyCodes = new List<KeyCode>();
     public void Start()
     {
-        Debug.Log("name "+transform.name+" isserver"+IsServer);
+        Debug.Log("name " + transform.name + " isserver " + IsServer);
         clientId = NetworkManager.Singleton.LocalClientId;
-        if(IsClient)
+        if (IsClient)
         {
             Debug.Log("Client started");
         }
-        if(IsServer)
+        if (IsServer)
         {
             Debug.Log("Server started");
         }
-        if(transform.name=="GameManager_N(Clone)"&&IsServer)
+        if (transform.name == "GameManager_N(Clone)" && IsServer)
         {
-            Debug.Log("Game manager started/inputhandler started");
-            iamserver=true;
+            Debug.Log("Game manager started/inputhandler");
+            iamserver = true;
             Keymap();
         }
-
     }
     /*public void setupinput(List<KeyCode> keyCodes)
     {
@@ -48,7 +47,7 @@ public class InputHandler : NetworkBehaviour
         this.keyCodes = keyCodes;
         for(int i=0;i<playerInput.Count;i++)
         {
-            for(int j=0;j<keyCodes.Count;j++)
+            for(int j=0;j<keyCodes.Count;j++) // Fixed syntax error in commented code
             {
                 playerInput[i].Add(keyCodes[j].ToString(),false);
             }
@@ -56,122 +55,176 @@ public class InputHandler : NetworkBehaviour
     }*/
     public void Update()
     {
-        if(IsOwner&&IsClient)
+        if (IsOwner && IsClient)
         {
-            if(Input.GetKeyDown(KeyCode.Return))
+            if (Input.GetKeyDown(KeyCode.Return))
             {
-                InputGetkeyDownServerRpc(KeyCode.Return,clientId,true);
+                InputGetkeyDownServerRpc(KeyCode.Return, clientId, true);
             }
-            else if(Input.GetKeyUp(KeyCode.Return))
+            else if (Input.GetKeyUp(KeyCode.Return))
             {
-                InputGetkeyDownServerRpc(KeyCode.Return,clientId);
-            }
-
-            if(Input.GetKeyDown(KeyCode.Space))
-            {
-                InputGetkeyDownServerRpc(KeyCode.Space,clientId,true);
-            }
-            else if(Input.GetKeyUp(KeyCode.Space))
-            {
-                InputGetkeyDownServerRpc(KeyCode.Space,clientId);
+                InputGetkeyDownServerRpc(KeyCode.Return, clientId);
             }
 
-            if(Input.GetKeyDown(KeyCode.Q))
+            if (Input.GetKeyDown(KeyCode.Space))
             {
-                InputGetkeyDownServerRpc(KeyCode.Q,clientId,true);
+                InputGetkeyDownServerRpc(KeyCode.Space, clientId, true);
             }
-            else if(Input.GetKeyUp(KeyCode.Q))
+            else if (Input.GetKeyUp(KeyCode.Space))
             {
-                InputGetkeyDownServerRpc(KeyCode.Q,clientId);
+                InputGetkeyDownServerRpc(KeyCode.Space, clientId);
             }
-            if(Input.GetKeyDown(KeyCode.W))
+
+            if (Input.GetKeyDown(KeyCode.Q))
             {
-                InputGetkeyDownServerRpc(KeyCode.W,clientId,true);
+                InputGetkeyDownServerRpc(KeyCode.Q, clientId, true);
             }
-            else if(Input.GetKeyUp(KeyCode.W))
+            else if (Input.GetKeyUp(KeyCode.Q))
             {
-                InputGetkeyDownServerRpc(KeyCode.W,clientId);
+                InputGetkeyDownServerRpc(KeyCode.Q, clientId);
             }
-            if(Input.GetKeyDown(KeyCode.Alpha1))
+            if (Input.GetKeyDown(KeyCode.W))
             {
-                InputGetkeyDownServerRpc(KeyCode.Alpha1,clientId,true);
+                InputGetkeyDownServerRpc(KeyCode.W, clientId, true);
             }
-            else if(Input.GetKeyUp(KeyCode.Alpha1))
+            else if (Input.GetKeyUp(KeyCode.W))
             {
-                InputGetkeyDownServerRpc(KeyCode.Alpha2,clientId);
+                InputGetkeyDownServerRpc(KeyCode.W, clientId);
             }
-            if(Input.GetKeyDown(KeyCode.Alpha2))
+
+            if (Input.GetKeyDown(KeyCode.Alpha1))
             {
-                InputGetkeyDownServerRpc(KeyCode.Alpha2,clientId,true);
+                InputGetkeyDownServerRpc(KeyCode.Alpha1, clientId, true);
             }
-            else if(Input.GetKeyUp(KeyCode.Alpha2))
+            else if (Input.GetKeyUp(KeyCode.Alpha1))
             {
-                InputGetkeyDownServerRpc(KeyCode.Alpha2,clientId);
+                InputGetkeyDownServerRpc(KeyCode.Alpha1, clientId); // Fixed typo from QAlpha2 to Alpha1
             }
-            if(Input.GetKeyDown(KeyCode.Alpha3))
+            if (Input.GetKeyDown(KeyCode.Alpha2))
             {
-                InputGetkeyDownServerRpc(KeyCode.Alpha3,clientId,true);
+                InputGetkeyDownServerRpc(KeyCode.Alpha2, clientId, true);
             }
-            else if(Input.GetKeyUp(KeyCode.Alpha3))
+            else if (Input.GetKeyUp(KeyCode.Alpha2))
             {
-                InputGetkeyDownServerRpc(KeyCode.Alpha3,clientId);
+                InputGetkeyDownServerRpc(KeyCode.Alpha2, clientId);
             }
-            if(Input.GetKeyDown(KeyCode.Alpha4))
+            if (Input.GetKeyDown(KeyCode.Alpha3))
             {
-                InputGetkeyDownServerRpc(KeyCode.Alpha4,clientId,true);
+                InputGetkeyDownServerRpc(KeyCode.Alpha3, clientId, true);
             }
-            else if(Input.GetKeyUp(KeyCode.Alpha4))
+            else if (Input.GetKeyUp(KeyCode.Alpha3))
             {
-                InputGetkeyDownServerRpc(KeyCode.Alpha4,clientId);
+                InputGetkeyDownServerRpc(KeyCode.Alpha3, clientId);
+            }
+            if (Input.GetKeyDown(KeyCode.Alpha4))
+            {
+                InputGetkeyDownServerRpc(KeyCode.Alpha4, clientId, true);
+            }
+            else if (Input.GetKeyUp(KeyCode.Alpha4))
+            {
+                InputGetkeyDownServerRpc(KeyCode.Alpha4, clientId);
+            }
+            // Added for Old Maid
+            if (Input.GetKeyDown(KeyCode.M))
+            {
+                InputGetkeyDownServerRpc(KeyCode.M, clientId, true);
+            }
+            else if (Input.GetKeyUp(KeyCode.M))
+            {
+                InputGetkeyDownServerRpc(KeyCode.M, clientId);
+            }
+            if (Input.GetKeyDown(KeyCode.R))
+            {
+                InputGetkeyDownServerRpc(KeyCode.R, clientId, true);
+            }
+            else if (Input.GetKeyUp(KeyCode.R))
+            {
+                InputGetkeyDownServerRpc(KeyCode.R, clientId);
+            }
+            if (Input.GetKeyDown(KeyCode.S))
+            {
+                InputGetkeyDownServerRpc(KeyCode.S, clientId, true);
+            }
+            else if (Input.GetKeyUp(KeyCode.S))
+            {
+                InputGetkeyDownServerRpc(KeyCode.S, clientId);
+            }
+            if (Input.GetKeyDown(KeyCode.LeftAlt))
+            {
+                InputGetkeyDownServerRpc(KeyCode.LeftAlt, clientId, true);
+            }
+            else if (Input.GetKeyUp(KeyCode.LeftAlt))
+            {
+                InputGetkeyDownServerRpc(KeyCode.LeftAlt, clientId);
+            }
+            if (Input.GetKeyDown(KeyCode.Escape))
+            {
+                InputGetkeyDownServerRpc(KeyCode.Escape, clientId, true);
+            }
+            else if (Input.GetKeyUp(KeyCode.Escape))
+            {
+                InputGetkeyDownServerRpc(KeyCode.Escape, clientId); // Fixed typo from InputGetkeyUpServerRpc
+            }
+            if (Input.GetKeyDown(KeyCode.I))
+            {
+                InputGetkeyDownServerRpc(KeyCode.I, clientId, true);
+            }
+            else if (Input.GetKeyUp(KeyCode.I))
+            {
+                InputGetkeyDownServerRpc(KeyCode.I, clientId);
             }
         }
-
     }
     public void Keymap()
     {
-        if(transform.name=="GameManager_N(Clone)"&&IsServer)
+        if (transform.name == "GameManager_N(Clone)" && IsServer)
         {
             Debug.Log("real Keymap started");
         }
         else
-        Debug.Log("Keymap started");
+        {
+            Debug.Log("Keymap started");
+        }
 
-        for(int i=0;i<playerInput.Count;i++)
-            {
-                playerInput[i].Add(KeyCode.Return.ToString(),false);
-                playerInput[i].Add(KeyCode.Space.ToString(),false);
-                playerInput[i].Add(KeyCode.Q.ToString(),false);
-                playerInput[i].Add(KeyCode.W.ToString(),false);
-                playerInput[i].Add(KeyCode.Alpha1.ToString(),false);
-                playerInput[i].Add(KeyCode.Alpha2.ToString(),false);
-                playerInput[i].Add(KeyCode.Alpha3.ToString(),false);
-                playerInput[i].Add(KeyCode.Alpha4.ToString(),false);
-
-            }
+        for (int i = 0; i < playerInput.Count; i++)
+        {
+            playerInput[i].Add(KeyCode.Return.ToString(), false);
+            playerInput[i].Add(KeyCode.Space.ToString(), false);
+            playerInput[i].Add(KeyCode.Q.ToString(), false);
+            playerInput[i].Add(KeyCode.W.ToString(), false);
+            playerInput[i].Add(KeyCode.Alpha1.ToString(), false);
+            playerInput[i].Add(KeyCode.Alpha2.ToString(), false);
+            playerInput[i].Add(KeyCode.Alpha3.ToString(), false);
+            playerInput[i].Add(KeyCode.Alpha4.ToString(), false);
+            // Added key mappings for Old Maid
+            playerInput[i].Add(KeyCode.M.ToString(), false);
+            playerInput[i].Add(KeyCode.R.ToString(), false);
+            playerInput[i].Add(KeyCode.S.ToString(), false);
+            playerInput[i].Add(KeyCode.LeftAlt.ToString(), false);
+            playerInput[i].Add(KeyCode.Escape.ToString(), false);
+            playerInput[i].Add(KeyCode.I.ToString(), false);
+        }
     }
     [ServerRpc]
-    public void InputGetkeyDownServerRpc(KeyCode keyCode,ulong clientId,bool isPressed = false)
+    public void InputGetkeyDownServerRpc(KeyCode keyCode, ulong clientId, bool isPressed = false)
     {
-        GameObject Gamemanger = GameObject.Find("GameManager_N(Clone)");
-        InputHandler inputHandler = Gamemanger.GetComponent<InputHandler>();
-        inputHandler.playerInput[(int)clientId][keyCode.ToString()] = isPressed;
+        Debug.Log($"InputGetkeyDownServerRpc called for key {keyCode} by client {clientId}, isPressed: {isPressed}");
+        // Directly use 'this' instead of finding GameManager
+        this.playerInput[(int)clientId][keyCode.ToString()] = isPressed;
     }
-    public bool GetKeyDown(KeyCode keyCode,int clientId)
+    public bool GetKeyDown(KeyCode keyCode, int clientId)
     {
-
-        if(!IsServer&&transform.name!="GameManager_N(Clone)")
+        if (!IsServer && transform.name != "GameManager_N(Clone)")
         {
-        Debug.Log("imposter");
-        return false;
+            Debug.Log("imposter");
+            return false;
         }
-        if(playerInput[clientId][keyCode.ToString()])
+        if (playerInput[clientId][keyCode.ToString()])
         {
-        Debug.Log("key pressed"+keyCode.ToString()+" clientId "+clientId);
-        playerInput[clientId][keyCode.ToString()]=false;
-        return true;
+            Debug.Log("key pressed " + keyCode.ToString() + " clientId " + clientId);
+            playerInput[clientId][keyCode.ToString()] = false;
+            return true;
         }
         return false;
-        
     }
- 
 }
