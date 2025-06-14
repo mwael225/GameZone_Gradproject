@@ -10,8 +10,8 @@ GameObject:
   m_Component:
   - component: {fileID: 6587911329432514767}
   - component: {fileID: 3119011462292517719}
-  - component: {fileID: 164074500916360571}
   - component: {fileID: 2358301240423511484}
+  - component: {fileID: 1961490196072324149}
   m_Layer: 0
   m_Name: player3
   m_TagString: Untagged
@@ -61,19 +61,6 @@ MonoBehaviour:
   AutoObjectParentSync: 1
   SyncOwnerTransformWhenParented: 1
   AllowOwnerToParent: 0
---- !u!114 &164074500916360571
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1716645971447858428}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: cbbfd67faca5bc449acaa1812d24d182, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  ShowTopMostFoldoutHeaderGroup: 1
 --- !u!114 &2358301240423511484
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -87,7 +74,20 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   ShowTopMostFoldoutHeaderGroup: 1
-  setupinputcalled: 0
+  keyCodes: 
+--- !u!114 &1961490196072324149
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1716645971447858428}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 3db154cb401ddaa4a9cf0bf58a544966, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  ShowTopMostFoldoutHeaderGroup: 1
 --- !u!1 &2486906474676115519
 GameObject:
   m_ObjectHideFlags: 0

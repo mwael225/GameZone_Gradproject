@@ -2,30 +2,54 @@ using UnityEngine;
 using GameSystem;
 using System.Collections.Generic;
 using System.Collections;
-public class Screw :CardGame
+using Unity.Netcode;
+public class Screw: CardGame
 {
-    string prefabpath = "Prefabs/Screw_CardDeck";
-    public string [] specialcardsnames= {"Card_Seven","Card_Eight","Card_Nine","Card_Ten","Card_Match","Card_Lookaround","Card_Swap"};
+    string prefabpath = "ScrewDeck";
+    public string[] specialcardsnames = { "Card_Seven", "Card_Eight", "Card_Nine", "Card_Ten", "Card_Match", "Card_Lookaround", "Card_Swap" };
 
-    public int naviagedplayerindex,navigatedplayercard,lookaroundcounter=0;
-    bool lookedaround =false;
-
-
-    public Screw() : base("Screw", 4)
+    public Dictionary<string, int> cardscores = new Dictionary<string, int>
     {
+        {"Card_One", 1},{"Card_Two", 2},{"Card_Three", 3},{"Card_Four", 4},
+        {"Card_Five", 5},{"Card_Six", 6},{"Card_Seven", 7},{"Card_Eight", 8},
+        {"Card_Nine", 9},{"Card_Ten", 10},{"Card_Match", 10},{"Card_Lookaround", 10},
+        {"Card_Swap", 10},{"Card_RedScrew", 25},{"Card_GreenScrew", 0},{"Card_Plus20", 20},
+        {"Card_negative1", -1}
+    };
+    public int naviagedplayerindex, navigatedplayercard, lookaroundcounter = 0;
+    bool lookedaround = false;
+    public int lookaroundplayercounter = 0;
+    GameObject origin;
+
+    public enum GameState
+    {
+        Start, Normal, Choosing1, Choosing2, Swapping1, Swapping2, Picking,
+        Action, Basra, Matching, Seeothercard, Swapwplayer, Lookaround, End, NextTurn
+    }
+    public GameState gameState;
+
+    public Screw(InputHandler inputHandler) : base("Screw", 4, inputHandler)
+    {
+        gameState = new GameState();
         centralpileLocalpos = new List<Vector3>();
-        pickrotation = new List<Vector3>
+        pickRotation = new List<Vector3>
         {
             new Vector3(-120, 0, 0), new Vector3(0, 120, -90), new Vector3(120,0 ,180 ), new Vector3(0, -120, 90)
         };
         discardpileRotation = new Vector3(0, 180, 180);
-        oldscale =new Vector3(150,225,0.540000081f);
-        playerrotations = new List<Vector3>
+        oldscale = new Vector3(150, 225, 0.540000081f);
+        playerRotations = new List<Vector3>
         {
             new Vector3(0, 0, 180), new Vector3(0, 0, 90), new Vector3(0,0 ,0), new Vector3(0, 0, -90)
         };
-        discard_pilespcaing= new List<Vector3> {new Vector3(0, 0, 0.005f)};
-        GameObjects=prefabtoGamebojects(prefabpath);
+        discard_pileSpacing = new List<Vector3> { new Vector3(0, 0, 0.005f) };
+        origin = GameObject.Instantiate(Resources.Load<GameObject>("Prefabs_N/Screw_CardDeck_N"));
+        origin.GetComponent<NetworkObject>().Spawn();
+        GameObjects = spawnobjects(prefabpath);
+        for (int i = 0; i < GameObjects.Count; i++)
+        {
+            GameObjects[i].transform.SetParent(origin.transform);
+        }
         shuffledeck(GameObjects);
         DealCards(4);
         Assemble(deck);
@@ -34,24 +58,21 @@ public class Screw :CardGame
     }
     public IEnumerator memorizecard()
     {
-        
-        for(int i =0;i<hands.Count;i++)
+        for (int i = 0; i < hands.Count; i++)
         {
-            hands[i][2].transform.Translate(0,0,1f);
-            hands[i][2].transform.localRotation = Quaternion.Euler(pickrotation[i]);
-            hands[i][3].transform.Translate(0,0,1f);
-            hands[i][3].transform.localRotation = Quaternion.Euler(pickrotation[i]);
+            hands[i][2].transform.Translate(0, 0, 1f);
+            hands[i][2].transform.localRotation = Quaternion.Euler(pickRotation[i]);
+            hands[i][3].transform.Translate(0, 0, 1f);
+            hands[i][3].transform.localRotation = Quaternion.Euler(pickRotation[i]);
         }
-        yield return new WaitForSeconds(4f);
-        for(int i =0;i<hands.Count;i++)
+        yield return new WaitForSeconds(10f);
+        for (int i = 0; i < hands.Count; i++)
         {
             hands[i][2].transform.localPosition = handspostions[i][2];
-            hands[i][2].transform.localRotation = Quaternion.Euler(playerrotations[i]);
+            hands[i][2].transform.localRotation = Quaternion.Euler(playerRotations[i]);
             hands[i][3].transform.localPosition = handspostions[i][3];
-            hands[i][3].transform.localRotation = Quaternion.Euler(playerrotations[i]);
+            hands[i][3].transform.localRotation = Quaternion.Euler(playerRotations[i]);
         }
-
-        
     }
     public override void setupposition()
     {
@@ -63,291 +84,250 @@ public class Screw :CardGame
                 },
                 new()
                 {
-                    new Vector3(-2.9f, -0.6f, 0f),new Vector3(-2.9f, 0.5f, 0f),new Vector3(-4.5f, -0.6f, 0f),new Vector3(-4.5f, 0.5f, 0f)
+                    new Vector3(-2.9f, -0.6f, 0f),new Vector3(-2.9f, 0.5f, 0f),new Vector3(-4.5f, -0.6f, 0f),new Vector3(-4.5f, 0.5f, 0f),new Vector3(-5.6f,-0.6f,0f),new Vector3(-5.6f,0.5f,0f)
                 },
                 new()
                 {
-                    new Vector3(0.12f, 2.3f, 0),new Vector3(-1, 2.3f, 0),new Vector3(0.12f, 3.9f, 0),new Vector3(-1, 3.9f, 0)
+                    new Vector3(0.12f, 2.3f, 0),new Vector3(-1, 2.3f, 0),new Vector3(0.12f, 3.9f, 0),new Vector3(-1, 3.9f, 0), new Vector3(-2.1f,2.3f,0),new Vector3(-2.1f,3.9f,0)
                 },
                 new()
                 {
-                    new Vector3(2f, -0.6f, 0f),new Vector3(2f, 0.5f, 0f),new Vector3(3.5f, -0.6f, 0f),new Vector3(3.5f, 0.5f, 0f)
+                    new Vector3(2f, -0.6f, 0f),new Vector3(2f, 0.5f, 0f),new Vector3(3.5f, -0.6f, 0f),new Vector3(3.5f, 0.5f, 0f), new Vector3(4.6f,-0.6f,0f),new Vector3(4.6f,0.5f,0f)
                 },
           };
         centralpileLocalpos.Add(new Vector3(-1, 0, 0));
-        pickposition = new List<Vector3>
+        pickPosition = new List<Vector3>
             {
                 new Vector3(-0.4f, -3.7f, 1),
                 new Vector3(-3.9f, -0.033f, 1),
                 new Vector3(-0.4f, 3.7f, 1),
                 new Vector3(2.95f,0.033f,1)
-            }; 
+            };
     }
     public override void DealCards(int numberofcards)
     {
         base.DealCards(numberofcards);
-        centralPile.AddLast(deck[deck.Count - 1]);
+        discardpile.AddLast(deck[deck.Count - 1]);
         deck.RemoveAt(deck.Count - 1);
     }
-    protected override void MovetoPostion() 
+    protected override void MovetoPostion()
     {
         base.MovetoPostion();
-        centralPile.First.Value.transform.localPosition = centralpileLocalpos[0];
-        centralPile.First.Value.transform.Rotate(0, 180, 0);
+        discardpile.First.Value.transform.localPosition = centralpileLocalpos[0];
+        discardpile.First.Value.transform.Rotate(0, 180, 0);
     }
     public void swapwpickedcard(int player)
     {
         Debug.Log("entered function");
         GameObject temp = hands[player][navigatedCardindex];
         hands[player][navigatedCardindex].transform.localScale = oldscale;
-        hands[player][navigatedCardindex].GetComponent<Renderer>().material.color = Color.white;
         hands[player][navigatedCardindex] = pickedcard;
-        hands[player][navigatedCardindex].transform.localPosition=handspostions[player][navigatedCardindex];
-        hands[player][navigatedCardindex].transform.localRotation=Quaternion.Euler(playerrotations[player]);
+        hands[player][navigatedCardindex].transform.localPosition = handspostions[player][navigatedCardindex];
+        hands[player][navigatedCardindex].transform.localRotation = Quaternion.Euler(playerRotations[player]);
         throwcard(temp);
         pickedcard = null;
-        gamestate = "normal";
-        
+        gameState = GameState.NextTurn;
+
     }
     public void swapwdiscardpile(int player)
     {
         GameObject card = hands[player][navigatedCardindex];
         hands[player][navigatedCardindex].transform.localScale = oldscale;
-        hands[player][navigatedCardindex].GetComponent<Renderer>().material.color = Color.white;
-        hands[player][navigatedCardindex] = centralPile.Last.Value;
-        hands[player][navigatedCardindex].transform.localPosition=handspostions[player][navigatedCardindex];
-        hands[player][navigatedCardindex].transform.localRotation=Quaternion.Euler(playerrotations[player]);
-        centralPile.RemoveLast();
-        centralpileLocalpos[0]-= discard_pilespcaing[0];
+        hands[player][navigatedCardindex] = discardpile.Last.Value;
+        hands[player][navigatedCardindex].transform.localPosition = handspostions[player][navigatedCardindex];
+        hands[player][navigatedCardindex].transform.localRotation = Quaternion.Euler(playerRotations[player]);
+        discardpile.RemoveLast();
+        centralpileLocalpos[0] -= discard_pileSpacing[0];
         throwcard(card);
-        gamestate = "normal";
+        gameState = GameState.NextTurn;
     }
     public void match(int player)
     {
-        if (gamestate =="basra")
+        if (gameState == GameState.Basra)
         {
             hands[player][navigatedCardindex].transform.localScale = oldscale;
-            hands[player][navigatedCardindex].GetComponent<Renderer>().material.color = Color.white;
             throwCard(player, navigatedCardindex);
             pickedcard = null;
-            gamestate = "normal";
+            gameState = GameState.NextTurn;
+            navigatedCardindex = 0;
         }
         else
         {
-            if(hands[player][navigatedCardindex].name.Split(" ")[0]==centralPile.Last.Value.name.Split(" ")[0])
+            if (hands[player][navigatedCardindex].name.Split(" ")[0] == discardpile.Last.Value.name.Split(" ")[0])
             {
                 Debug.Log("they match");
                 hands[player][navigatedCardindex].transform.localScale = oldscale;
-                hands[player][navigatedCardindex].GetComponent<Renderer>().material.color = Color.white;
                 throwCard(player, navigatedCardindex);
-                gamestate ="normal";
+                gameState = GameState.NextTurn; 
+                navigatedCardindex = 0;
             }
             else
             {
                 Debug.Log("they don't match");
-                hands[player].Add(centralPile.Last.Value);
-                hands[player][hands[player].Count-1].transform.localPosition=handspostions[player][hands[player].Count-1];
-                hands[player][hands[player].Count-1].transform.localRotation=Quaternion.Euler(playerrotations[player]);
-                centralPile.RemoveLast();
-                gamestate ="normal";
+                hands[player].Add(discardpile.Last.Value);
+                hands[player][hands[player].Count - 1].transform.localPosition = handspostions[player][hands[player].Count - 1];
+                hands[player][hands[player].Count - 1].transform.localRotation = Quaternion.Euler(playerRotations[player]);
+                discardpile.RemoveLast();
+                gameState = GameState.NextTurn;
             }
         }
-        
     }
 
     public IEnumerator seeurcard(int player)
     {
-        if(Input.GetKeyDown(KeyCode.Return))
+        if (inputHandler.GetKeyDown(KeyCode.Return, player))
         {
-        hands[player][navigatedCardindex].transform.localScale = oldscale;
-        hands[player][navigatedCardindex].GetComponent<Renderer>().material.color = Color.white;
-        hands[player][navigatedCardindex].transform.localPosition = pickposition[player];
-        hands[player][navigatedCardindex].transform.localRotation = Quaternion.Euler(pickrotation[player]);
-        yield return new WaitForSeconds(2f);
-        hands[player][navigatedCardindex].transform.localPosition = handspostions[player][navigatedCardindex];
-        hands[player][navigatedCardindex].transform.localRotation = Quaternion.Euler(playerrotations[player]);
-        pickedcard = null;
-        gamestate = "normal";
+            hands[player][navigatedCardindex].transform.localScale = oldscale;
+            hands[player][navigatedCardindex].transform.localPosition = pickPosition[player];
+            hands[player][navigatedCardindex].transform.localRotation = Quaternion.Euler(pickRotation[player]);
+            yield return new WaitForSeconds(2f);
+            hands[player][navigatedCardindex].transform.localPosition = handspostions[player][navigatedCardindex];
+            hands[player][navigatedCardindex].transform.localRotation = Quaternion.Euler(playerRotations[player]);
+            pickedcard = null;
+            gameState = GameState.NextTurn;
         }
         yield return null;
     }
     public IEnumerator seeotherscard(int player)
     {
-
-        if(Input.GetKeyDown(KeyCode.Return))
-        {
-        hands[naviagedplayerindex][navigatedplayercard].transform.localPosition = pickposition[player];
-        hands[naviagedplayerindex][navigatedplayercard].transform.localRotation = Quaternion.Euler(pickrotation[player]);
+        hands[naviagedplayerindex][navigatedplayercard].transform.localPosition = pickPosition[player];
+        hands[naviagedplayerindex][navigatedplayercard].transform.localRotation = Quaternion.Euler(pickRotation[player]);
         yield return new WaitForSeconds(2f);
         hands[naviagedplayerindex][navigatedplayercard].transform.localPosition = handspostions[naviagedplayerindex][navigatedplayercard];
-        hands[naviagedplayerindex][navigatedplayercard].transform.localRotation = Quaternion.Euler(playerrotations[naviagedplayerindex]);
-        gamestate = "normal";
+        hands[naviagedplayerindex][navigatedplayercard].transform.localRotation = Quaternion.Euler(playerRotations[naviagedplayerindex]);
+        gameState = GameState.NextTurn;
+        firsttime = true;
         pickedcard = null;
-        }
     }
     public IEnumerator lookaround(int player)
     {
-        if(lookedaround==true)
+        if (lookedaround == true)
         {
-            gamestate = "normal";
+            lookaroundcounter = 0;
+            gameState = GameState.NextTurn;
             pickedcard = null;
             lookaroundcounter = 0;
             lookedaround = false;
             yield break;
         }
-        for(int i =0;i<hands[naviagedplayerindex].Count;i++)
+        lookaroundplayercounter = (player + lookaroundcounter) % numberOfPlayers;
+
+        for (int i = 0; i < hands[lookaroundplayercounter].Count; i++)
         {
-                Debug.Log("player "+player);
-                Debug.Log("lookaroundcounter "+lookaroundcounter+" card: "+i);
-                hands[player+lookaroundcounter%numberOfPlayers][i].transform.localScale = oldscale;
-                hands[player+lookaroundcounter%numberOfPlayers][i].GetComponent<Renderer>().material.color = Color.white;    
+            if (i != navigatedplayercard)
+                hands[lookaroundplayercounter][i].transform.localScale = oldscale;
         }
-        if (Input.GetKeyDown(KeyCode.Q))
-                {
-                    navigatedplayercard =(navigatedplayercard - 1+hands[player+lookaroundcounter%numberOfPlayers].Count )% hands[player+lookaroundcounter%numberOfPlayers].Count;
-                }
-        else if (Input.GetKeyDown(KeyCode.W))
-                {
-                    navigatedplayercard = (navigatedplayercard + 1) % hands[player+lookaroundcounter&numberOfPlayers].Count;
-                }
-        if(Input.GetKeyDown(KeyCode.Return))
+        if (inputHandler.GetKeyDown(KeyCode.Q, player))
         {
-        hands[player+lookaroundcounter%numberOfPlayers][navigatedplayercard].transform.localPosition = pickposition[player];
-        hands[player+lookaroundcounter%numberOfPlayers][navigatedplayercard].transform.localRotation = Quaternion.Euler(pickrotation[player]);
-        yield return new WaitForSeconds(2f);
-        hands[player+lookaroundcounter%numberOfPlayers][navigatedplayercard].transform.localPosition = handspostions[player+lookaroundcounter%numberOfPlayers][navigatedplayercard];
-        hands[player+lookaroundcounter%numberOfPlayers][navigatedplayercard].transform.localRotation = Quaternion.Euler(playerrotations[player+lookaroundcounter%numberOfPlayers]);
-        lookaroundcounter++;
-        player = (player + lookaroundcounter) % numberOfPlayers;
-        Debug.Log("lookaroundcounter"+lookaroundcounter);
+            navigatedplayercard = (navigatedplayercard - 1 + hands[lookaroundplayercounter].Count) % hands[lookaroundplayercounter].Count;
         }
-        GameObject navigatedCard = hands[player+lookaroundcounter%numberOfPlayers][navigatedplayercard];
+        else if (inputHandler.GetKeyDown(KeyCode.W, player))
+        {
+            navigatedplayercard = (navigatedplayercard + 1) % hands[lookaroundplayercounter].Count;
+        }
+        if (inputHandler.GetKeyDown(KeyCode.Return, player))
+        {
+            hands[lookaroundplayercounter][navigatedplayercard].transform.localPosition = pickPosition[player];
+            hands[lookaroundplayercounter][navigatedplayercard].transform.localRotation = Quaternion.Euler(pickRotation[player]);
+            yield return new WaitForSeconds(2f);
+            hands[lookaroundplayercounter][navigatedplayercard].transform.localPosition = handspostions[lookaroundplayercounter][navigatedplayercard];
+            hands[lookaroundplayercounter][navigatedplayercard].transform.localRotation = Quaternion.Euler(playerRotations[lookaroundplayercounter]);
+            lookaroundcounter++;
+            navigatedplayercard = 0;
+            Debug.Log("lookaroundcounter" + lookaroundcounter);
+        }
+        Debug.Log("lookaroundplayercounter" + lookaroundplayercounter);
+        GameObject navigatedCard = hands[lookaroundplayercounter][navigatedplayercard];
         navigatedCard.transform.localScale = oldscale * 1.2f;
-        navigatedCard.GetComponent<Renderer>().material.color = Color.cyan;
-        if(lookaroundcounter==4)
+        if (lookaroundcounter == 4)
         {
             lookedaround = true;
-        }   
+        }
         yield return null;
     }
-
+    bool firsttime = true;
     public IEnumerator navigateplayers(int player)
     {
-        Debug.Log("entered navigateplayers function");  
-        if(gamestate!="seeothercard"||gamestate!="swapwplayer")
+        if (firsttime)
         {
-            hands[naviagedplayerindex][navigatedplayercard].transform.localScale = oldscale;
-            hands[naviagedplayerindex][navigatedplayercard].GetComponent<Renderer>().material.color = Color.white;
-            yield return null;
+            naviagedplayerindex = (player + 1) % numberOfPlayers;
+            firsttime = false;
         }
-        for(int i =0;i<hands[naviagedplayerindex].Count;i++)
+        Debug.Log("entered navigateplayers function");
+        for (int i = 0; i < hands[naviagedplayerindex].Count; i++)
+        {
+            if (i != navigatedplayercard)
             {
                 hands[naviagedplayerindex][i].transform.localScale = oldscale;
-                hands[naviagedplayerindex][i].GetComponent<Renderer>().material.color = Color.white;
             }
-        if(naviagedplayerindex==player)
-            {
-                    naviagedplayerindex =(naviagedplayerindex - 1+numberOfPlayers )%numberOfPlayers;
-            }
-        if (Input.GetKeyDown(KeyCode.A))
-            {      
-                    naviagedplayerindex =(naviagedplayerindex - 1+numberOfPlayers )%numberOfPlayers;
-            }
-        else if (Input.GetKeyDown(KeyCode.D))
-                {
-                    naviagedplayerindex = (naviagedplayerindex + 1) % numberOfPlayers;
-                    if(naviagedplayerindex==player)
-                    {
-                        naviagedplayerindex = (naviagedplayerindex + 1) % numberOfPlayers;
-                    }
-                }
-        if (Input.GetKeyDown(KeyCode.Q))
-                {
-                    navigatedplayercard =(navigatedplayercard - 1+hands[naviagedplayerindex].Count )% hands[naviagedplayerindex].Count;
-                    Debug.Log(navigatedCardindex);
-                }
-        else if (Input.GetKeyDown(KeyCode.W))
-                {
-                    Debug.Log(navigatedCardindex);
-                    navigatedplayercard = (navigatedplayercard + 1) % hands[naviagedplayerindex].Count;
-                }
-                GameObject navigatedCard = hands[naviagedplayerindex][navigatedplayercard];
-                navigatedCard.transform.localScale = oldscale * 1.2f;
-                navigatedCard.GetComponent<Renderer>().material.color = Color.cyan;
-                if(gamestate=="normal")
-                {
-                    hands[naviagedplayerindex][navigatedplayercard].transform.localScale = oldscale;
-                    hands[naviagedplayerindex][navigatedplayercard].GetComponent<Renderer>().material.color = Color.white;
-                }
-            yield return null;
+        }
+        if (inputHandler.GetKeyDown(KeyCode.A, player))
+        {
+            hands[naviagedplayerindex][navigatedplayercard].transform.localScale = oldscale;
+            navigatedplayercard = 0;
+            naviagedplayerindex = ((naviagedplayerindex - 1 + hands.Count) % numberOfPlayers) != player ? (naviagedplayerindex - 1 + hands.Count) % numberOfPlayers : (naviagedplayerindex - 2 + hands.Count) % numberOfPlayers;
+        }
+        else if (inputHandler.GetKeyDown(KeyCode.D, player))
+        {
+            hands[naviagedplayerindex][navigatedplayercard].transform.localScale = oldscale;
+            navigatedplayercard = 0;
+            naviagedplayerindex = ((naviagedplayerindex + 1) % numberOfPlayers) != player ? (naviagedplayerindex + 1) % numberOfPlayers : (naviagedplayerindex + 2) % numberOfPlayers;
+        }
+        if (inputHandler.GetKeyDown(KeyCode.Q, player))
+        {
+            Debug.Log("i am working");
+            navigatedplayercard = (navigatedplayercard - 1 + hands[naviagedplayerindex].Count) % hands[naviagedplayerindex].Count;
+        }
+        else if (inputHandler.GetKeyDown(KeyCode.W, player))
+        {
+            Debug.Log("i am working");
+            navigatedplayercard = (navigatedplayercard + 1) % hands[naviagedplayerindex].Count;
+        }
+        Debug.Log("navigatedplayerindex: " + naviagedplayerindex + " navigatedplayercard: " + navigatedplayercard);
+        GameObject navigatedCard = hands[naviagedplayerindex][navigatedplayercard];
+        navigatedCard.transform.localScale = oldscale * 1.2f;
+        yield return null;
     }
     public void scoresheet()
-    {   
-        int []scores = {0,0,0,0};
-        for(int i =0;i<hands.Count;i++)
+    {
+        int[] scores = { 0, 0, 0, 0 };
+        for (int i = 0; i < hands.Count; i++)
         {
-            for(int j =0;j<hands[i].Count;j++)
+            for (int j = 0; j < hands[i].Count; j++)
             {
-                switch (hands[i][j].name.Split(" ")[0])
-                {
-                    
-                    case "Card_One":
-                        scores[i] += 1;
-                        break;
-                    case "Card_Two":
-                        scores[i] += 2;
-                        break;
-                    case "Card_Three":
-                        scores[i] += 3;
-                        break;
-                    case "Card_Four":
-                        scores[i] += 4;
-                        break;
-                    case "Card_Five":
-                        scores[i] += 5;
-                        break;
-                    case "Card_Six":
-                        scores[i] += 6;
-                        break;
-                    case "Card_Seven":
-                        scores[i] += 7;
-                        break;
-                    case "Card_Eight":
-                        scores[i] += 8;
-                        break;
-                    case "Card_Nine":
-                        scores[i] += 9;
-                        break;
-                    case "Card_Ten":
-                        scores[i] += 10;
-                        break;
-                    case "Card_Lookaround":
-                        scores[i] += 10;
-                        break;
-                    case "Card_Swap":
-                        scores[i] += 10;
-                        break;
-                    case "Card_Match":
-                        scores[i] += 10;
-                        break;
-                    case "Card_RedScrew":
-                        scores[i] += 25;
-                        break;
-                    case "Card_GreenScrew":
-                        scores[i] += 0;
-                        break;
-                    case "Card_Plus20":
-                        scores[i] += 20;
-                        break;
-                    
-                }
+                Debug.Log("player " + i + " card " + hands[i][j].name);
+                scores[i] += cardscores[hands[i][j].name.TrimEnd()];
             }
         }
-        for(int i =0;i<scores.Length;i++)
+        for (int i = 0; i < scores.Length; i++)
         {
-            Debug.Log("player "+i+" score: "+scores[i]);
+
+            Debug.Log("player " + i + " score: " + scores[i]);
+        }
+        showcards();
+    }
+    public void showcards()
+    {
+        for (int i = 0; i < hands.Count; i++)
+        {
+            for (int j = 0; j < hands[i].Count; j++)
+            {
+                hands[i][j].transform.localScale = oldscale;
+                hands[i][j].transform.Rotate(0, 180, 0);
+            }
         }
     }
-
-
+    public void restock()
+    {
+        List<GameObject> list = new List<GameObject>();
+        for (int i = 0; i < discardpile.Count; i++)
+        {
+            discardpile.Last.Value.transform.rotation = Quaternion.Euler(new Vector3(0,0,0));
+            list.Add(discardpile.Last.Value);
+            discardpile.RemoveLast();
+        }
+        centralpileLocalpos[0]=new Vector3(-1, 0, 0);
+        shuffledeck(list);
+        Assemble(deck);
+    }
 }

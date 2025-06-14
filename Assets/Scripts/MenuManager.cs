@@ -28,10 +28,7 @@ public class MenuManager : MonoBehaviour
     {
         buttons.SetActive(true);
         menu.SetActive(false);
-
     }
-
-
     public void togglepass()
     {
         if (toggle1.isOn)

@@ -12,18 +12,20 @@ using TMPro;
 using Unity.Networking.Transport.Relay;
 using Unity.VisualScripting;
 using System;
+using GameSystem;
 
 public class hostclient : MonoBehaviour
 {
     [Header("UI References")]
-    public Button startHostButton;
-    public Button startClientButton;
-    public TMP_InputField joinCodeInput;
+    public GameObject startHostButton;
+    public GameObject startClientButton;
+    public GameObject joinCodeInput;
     public GameObject canvas;
     public TMP_Text joinCodeDisplay;
 
     private async void Awake()
     {
+
         // Initialize Unity Services
         await UnityServices.InitializeAsync();
 
@@ -35,36 +37,36 @@ public class hostclient : MonoBehaviour
         }
 
         // Add button listeners
-        startHostButton.onClick.AddListener(() =>
+        startHostButton.GetComponent<Button>().onClick.AddListener(() =>
         {
             StartHostWithRelay(3, "udp").ContinueWith(task =>
             {
                 if (task.IsCompletedSuccessfully)
                 {
-                    joinCodeDisplay.text = "Join Code: " + task.Result;
-                    Button startButton = startHostButton.GetComponent<Button>();
+                    joinCodeDisplay.text = "Join Code:" + task.Result;
+
                 }
                 else
                 {
                     Debug.LogError("Failed to start host: " + task.Exception);
                 }
             });
+            hideui();
         });
-        startClientButton.onClick.AddListener(() =>
+        startClientButton.GetComponent<Button>().onClick.AddListener(() =>
         {
-            StartClientWithRelay(joinCodeInput.text, "udp").ContinueWith(task =>
+            StartClientWithRelay(joinCodeInput.GetComponent<TMP_InputField>().text, "udp").ContinueWith(task =>
             {
                 if (task.IsCompletedSuccessfully && task.Result)
                 {
-                    Debug.Log("Client started successfully.");
-                    canvas.SetActive(false);  // Hide the canvas after starting the client
-                     // Hide the canvas after starting the client
+                    Debug.Log("Client started successfully.");  // Hide the canvas after starting the clien                    
                 }
                 else
                 {
                     Debug.LogError("Failed to start client: " + task.Exception);
                 }
             });
+            canvas.SetActive(false);
         });
     }
 
@@ -93,5 +95,11 @@ public class hostclient : MonoBehaviour
         var allocation = await RelayService.Instance.JoinAllocationAsync(joinCode: joinCode);
         NetworkManager.Singleton.GetComponent<UnityTransport>().SetRelayServerData(AllocationUtils.ToRelayServerData(allocation, connectionType));
         return !string.IsNullOrEmpty(joinCode) && NetworkManager.Singleton.StartClient();
+    }
+    void hideui()
+    {
+        startHostButton.SetActive(false);
+        startClientButton.SetActive(false);
+        joinCodeInput.SetActive(false);
     }
 }

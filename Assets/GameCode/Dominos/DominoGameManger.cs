@@ -1,19 +1,24 @@
 using UnityEngine;
-
-
+using Unity.Netcode;
 namespace GameSystem
 {
     public class DominosGameManager:GameManager
     {
         Dominos dominos;
+        int framecount=0;
         //enum Gamestate gamestate ={navitgaing,choosing}
+        InputHandler inputHandler;
         int[] scores={0,0,0,0};
-        public void Start() 
+        public void Start()
         {
-            Instantiate(Resources.Load<GameObject>("Prefabs/DominoBoard"));
-            dominos = new Dominos();
-            currentTurn=firstplayer();
-            Debug.Log("Current turn: " + currentTurn);
+            if (IsServer)
+            {
+                inputHandler = GetComponent<InputHandler>();
+                dominos = new Dominos(inputHandler);
+                currentTurn = firstplayer();
+                Debug.Log("Current turn: " + currentTurn);
+            }
+
         }
         public override int firstplayer()
         {
@@ -33,26 +38,30 @@ namespace GameSystem
         }
         public void Update()
         {
-            Debug.Log("Game state: " + dominos.gamestate);
+
+            if(!IsServer)return;
+            framecount++;
+            if(framecount==60)
+            {
+                framecount=0;
+                Debug.Log("Game state: " + dominos.gamestate);
+            }
             if(dominos.gamestate!="end")
             {
-                Debug.Log("convert to navigating");
                 if(dominos.gamestate=="navigating")
                 {
-                StartCoroutine(dominos.navigatedCards(currentTurn));
+                    StartCoroutine(dominos.navigatedCards(currentTurn));
                 }
-                if (Input.GetKeyDown(KeyCode.Return)||dominos.gamestate=="choosing")
+                if (inputHandler.GetKeyDown(KeyCode.Return,currentTurn)||dominos.gamestate=="choosing")
                 {
-                    if(dominos.centralPile.Count!=0)
-                    StartCoroutine(dominos.firstorlast());
-
+                    if(dominos.discardpile.Count!=0)
+                    StartCoroutine(dominos.firstorlast(currentTurn));
                     if(dominos.gamestate=="navigating")
                     {
-                    int x =dominos.centralPile.Count;
+                    int x =dominos.discardpile.Count;
                     Debug.Log("Central pile count: " + x);
                     dominos.throwCard(currentTurn,0,dominos.where);
-                    Debug.Log("gamestate2:"+dominos.gamestate);
-                        if(x<dominos.centralPile.Count)
+                        if(x<dominos.discardpile.Count)
                         {
                             if(dominos.gamestate!="end")
                             {
@@ -61,25 +70,25 @@ namespace GameSystem
                             dominos.navigatedCardindex=0;
                             dominos.gamestate="navigating";
                             }
-                            Debug.Log("a:"+dominos.gamestate);
+
                         }  
-                        Debug.Log("b:"+dominos.gamestate);
+
                     }
-                    Debug.Log("c:"+dominos.gamestate);
+
                 }
-                else if (Input.GetKeyDown(KeyCode.Space))
+                else if (inputHandler.GetKeyDown(KeyCode.Space,currentTurn))
                 {
                     Debug.Log("pass");
                     currentTurn=NextTurn(dominos.numberOfPlayers);
                 }
-                Debug.Log("d:"+dominos.gamestate);
+
             }
             else
             {
                 Debug.Log("End game");
                 EndGame();
             }
-            Debug.Log("e:"+dominos.gamestate);
+
         }
         public override void EndGame()
         {

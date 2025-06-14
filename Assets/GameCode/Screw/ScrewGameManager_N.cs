@@ -6,12 +6,12 @@ using UnityEngine.Android;
 using Unity.VisualScripting;
 namespace GameSystem    
 {
-    public class ScrewGameManager_N:GameManager_N
+    public class ScrewGameManager:GameManager
     {
-        Screw_N screw;
+        Screw screw;
         int actionnumber=-1;
         bool click = false;
-        bool screwdeclared,nextturnflag = false;
+        bool screwdeclared = false;
         int endgamecounter,framecount = 0;
         InputHandler inputHandler;
         List<KeyCode> keyCodes = new List<KeyCode>
@@ -22,6 +22,8 @@ namespace GameSystem
             KeyCode.Alpha4,
             KeyCode.Q,
             KeyCode.W,
+            KeyCode.A,
+            KeyCode.D,
             KeyCode.Return
         };
         GameObject card1, card2;
@@ -29,132 +31,140 @@ namespace GameSystem
         {
             if(!IsServer)return;
             inputHandler = GetComponent<InputHandler>();
-            //inputHandler.setupinput(keyCodes);
-            screw = new Screw_N(inputHandler);
+            inputHandler.Keymap(keyCodes);
+            screw = new Screw(inputHandler);
             currentTurn = firstplayer();
-            screw.gamestate = "start";
+            arrowdirection();
+            //screw.gameState = "start";
+            screw.gameState = Screw.GameState.Start;
             StartCoroutine(screw.memorizecard());
         }
-        
+        bool x = false;
         public void Update()
         {
-            if(!IsServer)return;
+            
+            if (!IsServer) return;  
 
-            if(screw.gamestate=="end")
+            if (screw.gameState == Screw.GameState.End)
             {
                 Debug.Log("game ended");
                 return;
             }
-            if(screwdeclared)
-            {
-                if(endgamecounter==4)
+            if(endgamecounter==4)
                 {
-                    screw.gamestate = "end";
+                    screw.gameState = Screw.GameState.End;
                     screw.scoresheet();
                 }
-            }
+
             currentTurn = NextTurn(screw.numberOfPlayers);
             framecount++;
             if(framecount%120==0)
             {
                 framecount =0;
-                Debug.Log(screw.gamestate); 
+                Debug.Log(screw.gameState); 
             }
-            StartCoroutine(screw.navigatedCards(currentTurn));
-
-            if(screw.gamestate=="seeothercard"||screw.gamestate=="choosing1"||screw.gamestate=="choosing2"||screw.gamestate=="lookaround")
+            if (screw.gameState != Screw.GameState.Seeothercard && screw.gameState != Screw.GameState.Choosing2&&screw.gameState!=Screw.GameState.Lookaround)
             {
-                actioncall(currentTurn,actionnumber);
+                StartCoroutine(screw.navigatedCards(currentTurn));
             }
-            else if(screw.gamestate=="action"||screw.gamestate == "Swapping1"||screw.gamestate == "picking"||inputHandler.GetKeyDown(KeyCode.Alpha1,currentTurn))
+            if (screw.gameState == Screw.GameState.Seeothercard || screw.gameState == Screw.GameState.Choosing1 || screw.gameState == Screw.GameState.Choosing2 || screw.gameState == Screw.GameState.Lookaround)
             {
-                if(screw.gamestate=="normal"||screw.gamestate=="start")
+                actioncall(currentTurn, actionnumber);
+            }
+            else if (screw.gameState == Screw.GameState.Action || screw.gameState == Screw.GameState.Swapping1 || screw.gameState == Screw.GameState.Picking || inputHandler.GetKeyDown(KeyCode.Alpha1, currentTurn))
+            {
+                if (screw.gameState == Screw.GameState.Normal || screw.gameState == Screw.GameState.Start)
                 {
-                    screw.gamestate = "normal";
+                    screw.gameState = Screw.GameState.Picking;
                 }
+                if (screw.pickedcard == null)
                 {
-                    screw.gamestate = "picking";
-                }
-                if(screw.pickedcard==null)
-                {
-
-                    screw.pickedcard = screw.PickCard(currentTurn);
+                    if (screw.deck.Count != 0)
+                    {
+                        screw.pickedcard = screw.PickCard(currentTurn);
+                    }
+                    else
+                    {
+                        screw.gameState = Screw.GameState.End;
+                        screw.scoresheet();
+                    }
                 }
                 else
                 {
-                    if(framecount%120==0)
-                    Debug.Log("you already picked a card");
+                    if (framecount % 120 == 0)
+                        Debug.Log("you already picked a card");
                 }
-                if(!click)
-                StartCoroutine(WaitAndAllowClickAgain(0.5f));
-                if(click)
+                if (!click)
+                    StartCoroutine(WaitAndAllowClickAgain(0.5f));
+                if (click)
                 {
                     pickingcard();
-                    if(screw.pickedcard==null)
-                    click = false;
+                    if (screw.pickedcard == null)
+                        click = false;
                 }
             }
-            else if(screw.gamestate=="Swapping2"||inputHandler.GetKeyDown(KeyCode.Alpha2,currentTurn))
+            else if (inputHandler.GetKeyDown(KeyCode.Alpha2, currentTurn))
             {
-                screw.gamestate = "Swapping2";
-                swapping();
+                screw.swapwdiscardpile(currentTurn);
             }
-            else if(screw.gamestate=="basra"||screw.gamestate=="matching"||inputHandler.GetKeyDown(KeyCode.Alpha3,currentTurn))
+            else if (screw.gameState == Screw.GameState.Basra || screw.gameState == Screw.GameState.Matching || inputHandler.GetKeyDown(KeyCode.Alpha3, currentTurn))
             {
-                if(screw.gamestate!="basra")
+                if (screw.gameState == Screw.GameState.Basra)
                 {
-                    screw.gamestate="matching";
+                    if (inputHandler.GetKeyDown(KeyCode.Return, currentTurn))
+                    {
+                        matching();
+                    }
                 }
-                matching();
+                else
+                {
+                    matching();
+                }
             }
-            else if(inputHandler.GetKeyDown(KeyCode.Alpha4,currentTurn))
+            else if (inputHandler.GetKeyDown(KeyCode.Alpha4, currentTurn))
             {
                 screwdeclared = true;
-                endgamecounter++;
+                screw.gameState = Screw.GameState.NextTurn;
             }
-     
         }
         public void pickingcard()
         {
-            if(screw.gamestate == "Swapping1"||inputHandler.GetKeyDown(KeyCode.Alpha1,currentTurn))
+            if (screw.gameState == Screw.GameState.Swapping1 || inputHandler.GetKeyDown(KeyCode.Alpha1, currentTurn))
             {
-                screw.gamestate = "Swapping1";
-                if(inputHandler.GetKeyDown(KeyCode.Return,currentTurn))
-                {
-                    Debug.Log("swaped");
-                    screw.swapwpickedcard(currentTurn);
-                }
+                screw.gameState = Screw.GameState.Swapping1;
+                Debug.Log("swaped");
+                screw.swapwpickedcard(currentTurn);
             }
-            if(screw.gamestate=="action"||inputHandler.GetKeyDown(KeyCode.Alpha2,currentTurn))
+            if (screw.gameState == Screw.GameState.Action || inputHandler.GetKeyDown(KeyCode.Alpha2, currentTurn))
             {
-                if(screw.gamestate!="action")
+                if (screw.gameState !=Screw.GameState.Action)
                 {
                     screw.throwcard(screw.pickedcard);
                     actionnumber = isaction();
                 }
-                if(screw.gamestate=="action"||actionnumber!=-1)
+                if (screw.gameState == Screw.GameState.Action || actionnumber != -1)
                 {
-                    screw.gamestate = "action";
-                    actioncall(currentTurn,actionnumber);
+                    screw.gameState = Screw.GameState.Action;
+                    actioncall(currentTurn, actionnumber);
                 }
                 else
                 {
-                screw.pickedcard = null;
-                screw.gamestate = "normal";
-                }
+                    screw.pickedcard = null;
+                    screw.gameState = Screw.GameState.NextTurn;
+                }                
             }
         }
         public int isaction()
         {
-            for(int i =0;i<screw.specialcardsnames.Length;i++)
+            for (int i = 0; i < screw.specialcardsnames.Length; i++)
             {
-                if(screw.centralPile.Last.Value.name.Split(" ")[0]==screw.specialcardsnames[i])
+                if (screw.discardpile.Last.Value.name.Split(" ")[0] == screw.specialcardsnames[i])
                 {
-                    Debug.Log("action card name: " + screw.centralPile.Last.Value.name);
+                    Debug.Log("action card name: " + screw.discardpile.Last.Value.name);
                     return i;
                 }
             }
-            Debug.Log("not a action card : "+screw.centralPile.Last.Value.name);
+            Debug.Log("not a action card : "+screw.discardpile.Last.Value.name);
             return -1;
         }
         private IEnumerator WaitAndAllowClickAgain(float waitTime)
@@ -168,22 +178,25 @@ namespace GameSystem
         {
             if(number==0 || number ==1)
             {
-                
                 StartCoroutine(screw.seeurcard(player));
             }
             else if (number ==2|| number==3)
             {
-                screw.gamestate = "seeothercard";
-                StartCoroutine(screw.seeotherscard(player));
+                screw.gameState = Screw.GameState.Seeothercard;
+                if (inputHandler.GetKeyDown(KeyCode.Return, player))
+                {
+                    StartCoroutine(screw.seeotherscard(player));
+                }
                 StartCoroutine(screw.navigateplayers(player));
             }
             else if (number ==4)
             {
-                screw.gamestate = "basra";
+                screw.gameState = Screw.GameState.Basra;
             }
             else if (number ==5)
             {
-                screw.gamestate = "lookaround";
+                Debug.Log("lookaround");
+                screw.gameState = Screw.GameState.Lookaround;
                 StartCoroutine(screw.lookaround(player));
             }
             else 
@@ -191,63 +204,48 @@ namespace GameSystem
                 swapwplayer();
             }
         }
-        public void swapping()
-        {
-            if(inputHandler.GetKeyDown(KeyCode.Return,currentTurn))
-            {
-                screw.swapwdiscardpile(currentTurn);
-
-            }
-        }
         public void matching()
         {
-            if(screw.gamestate=="basra")
+            if(screw.gameState==Screw.GameState.Basra)
             {
                 Debug.Log("basra");
             }
-            if(inputHandler.GetKeyDown(KeyCode.Return,currentTurn))
-            {
-                screw.match(currentTurn);
-                UpdatecardPositions();
-            }
+            screw.match(currentTurn);
+            UpdatecardPositions();
+
         }
         public override int NextTurn(int noOfPlayers)
         {
-            if(nextturnflag||screw.gamestate!="normal")
+            if (screw.gameState == Screw.GameState.NextTurn)
             {
-                nextturnflag = true;
-                if(screw.gamestate=="normal")
+                screw.gameState = Screw.GameState.Normal;
+                screw.hands[currentTurn][screw.navigatedCardindex].transform.localScale = screw.oldscale;
+                if (screwdeclared)
                 {
-                    screw.hands[currentTurn][screw.navigatedCardindex].transform.localScale = screw.oldscale;
-                    screw.hands[currentTurn][screw.navigatedCardindex].GetComponent<Renderer>().material.color = Color.white;
-                    Debug.Log("current turn: " + currentTurn);
-                    nextturnflag=false;
-                    if(screwdeclared)
-                    {
-                        endgamecounter++;
-                    }
-                    return (currentTurn + 1) % noOfPlayers;
+                    endgamecounter++;
                 }
+                currentTurn = (currentTurn + 1) % noOfPlayers;
+                arrowdirection();
+                return currentTurn; 
             }
             return currentTurn;
         }
         public void swapwplayer()
         {
-            if(screw.gamestate=="choosing2")
+            if(screw.gameState==Screw.GameState.Choosing2)
             {
                 StartCoroutine(screw.navigateplayers(currentTurn));
             }
-            if(screw.gamestate!="choosing2")
+            if(screw.gameState!=Screw.GameState.Choosing2)
             {
-                screw.gamestate = "choosing1";
+                screw.gameState = Screw.GameState.Choosing1;
             }
-            if(screw.gamestate=="choosing1"&&inputHandler.GetKeyDown(KeyCode.Return,currentTurn))
+            if(screw.gameState==Screw.GameState.Choosing1&&inputHandler.GetKeyDown(KeyCode.Return,currentTurn))
             {
                 card1 = screw.hands[currentTurn][screw.navigatedCardindex];
-                
-                screw.gamestate = "choosing2";
+                screw.gameState = Screw.GameState.Choosing2;
             }
-            else if(screw.gamestate=="choosing2"&&inputHandler.GetKeyDown(KeyCode.Return,currentTurn))
+            else if(screw.gameState==Screw.GameState.Choosing2&&inputHandler.GetKeyDown(KeyCode.Return,currentTurn))
             {
                 card2 = screw.hands[currentTurn][screw.navigatedCardindex];
                 StopCoroutine(screw.navigateplayers(currentTurn));
@@ -255,9 +253,9 @@ namespace GameSystem
                 screw.hands[screw.naviagedplayerindex][screw.navigatedplayercard] = card1;
                 screw.hands[currentTurn][screw.navigatedCardindex].transform.localPosition =screw.handspostions[currentTurn][screw.navigatedCardindex];
                 screw.hands[screw.naviagedplayerindex][screw.navigatedplayercard].transform.localPosition =screw.handspostions[screw.naviagedplayerindex][screw.navigatedplayercard];
-                screw.hands[currentTurn][screw.navigatedCardindex].transform.localRotation = Quaternion.Euler(screw.playerrotations[currentTurn]);  
-                screw.hands[screw.naviagedplayerindex][screw.navigatedplayercard].transform.localRotation = Quaternion.Euler(screw.playerrotations[screw.naviagedplayerindex]);
-                screw.gamestate = "normal";
+                screw.hands[currentTurn][screw.navigatedCardindex].transform.localRotation = Quaternion.Euler(screw.playerRotations[currentTurn]);  
+                screw.hands[screw.naviagedplayerindex][screw.navigatedplayercard].transform.localRotation = Quaternion.Euler(screw.playerRotations[screw.naviagedplayerindex]);
+                screw.gameState = Screw.GameState.NextTurn;
                 screw.pickedcard = null;   
             }
         }
@@ -271,6 +269,5 @@ namespace GameSystem
                 }
             }
         }
-        
     }
 }

@@ -1,21 +1,16 @@
 using UnityEngine;
 using GameSystem;
 using System.Collections.Generic;
-using System.Threading;
-using System.Linq;
-using NUnit.Framework;
 using System;
-using Unity.Mathematics;
 using Unity.Netcode;
-public class Idoubt_N :CardGame_N
+public class Idoubt :CardGame
 {
 
-    string prefabpath = "Prefabs/Card_Deck";
     public string claim ="King";
-    List<GameObject> cards ;
-    GameObject origin;
+    List<GameObject> prev_play ;
+    GameObject origin;//it is an origin point for local position of cards/ local rotation of cards
     
-    public Idoubt_N(InputHandler inputHandler) : base("Idoubt", 4, inputHandler)
+    public Idoubt(InputHandler inputHandler) : base("Idoubt", 4, inputHandler)
     {
         discardpileRotation = new Vector3(180, 0, 0);
         oldscale = new Vector3(7f, 7f, 7f);
@@ -32,7 +27,7 @@ public class Idoubt_N :CardGame_N
         MovetoPostion();
         selectedCardsindex = new List<int>();
         centralpileLocalpos = new List<Vector3> { new Vector3(0, 0, 0) };
-        discard_pilespcaing = new List<Vector3> { new Vector3(0, 0, 0.005f) };
+        discard_pileSpacing = new List<Vector3> { new Vector3(0, 0, 0.005f) };
 
     }
     public override void setupposition()
@@ -44,7 +39,7 @@ public class Idoubt_N :CardGame_N
                 new Vector3(-0.034975f, -0.001f, 0)*6,
                 new Vector3(0.001f, -0.034975f, 0)*6,
             };
-        playerrotations = new List<Vector3>
+        playerRotations = new List<Vector3>
                 {
                     new Vector3(90, 0, 0), new Vector3(0, -90, -90), new Vector3(-90,0 ,180), new Vector3(0,90, 90)
                 };
@@ -81,24 +76,24 @@ public class Idoubt_N :CardGame_N
                 }
                 else
                 {
-                    Debug.Log("You can't select more than 4 cards");
+                    DebugLog2("You can't select more than 4 cards");
                 }
         }
     }
         
     public void throwCards(int player,List<int> cardsindex)
     {
-        cards = new List<GameObject>();
+        prev_play = new List<GameObject>();
         for(int i=0;i<cardsindex.Count;i++)
         {
-            cards.Add(hands[player][cardsindex[i]]);
+            prev_play.Add(hands[player][cardsindex[i]]);
         }
-        for(int i=0;i<cards.Count;i++)
+        for(int i=0;i<prev_play.Count;i++)
         {
-            cards[i].transform.localScale = oldscale;
-            cards[i].GetComponent<Renderer>().material.color=Color.white;
+            prev_play[i].transform.localScale = oldscale;
+            prev_play[i].GetComponent<Renderer>().material.color=Color.white;
             discardpileRotation += new Vector3(0,0,Zangles());
-            throwCard(player,hands[player].IndexOf(cards[i]));
+            throwCard(player,hands[player].IndexOf(prev_play[i]));
         }
         if(hands[player].Count==0)
         {
@@ -108,25 +103,24 @@ public class Idoubt_N :CardGame_N
     }
     public bool doubt(int player)
     {
-        bool isdoubt = false;
-        for(int i=0;i<cards.Count;i++)
+        bool islying = false;
+        for(int i=0;i<prev_play.Count;i++)
         {
-            if(cards[i].name.Split('-')[1]!=claim)
+            if(prev_play[i].name.Split('-')[1]!=claim)
             {
-                isdoubt = true;
+                islying = true;
                 piletohand(player-1%numberOfPlayers);
-                Debug.Log("passed");
 
             }
             else
             {
-                isdoubt = false;
+                islying = false;
                 piletohand(player);
-                Debug.Log("failed");  
+                DebugLog2("failed");  
             }
         }
         gamestate="claiming";
-        return isdoubt;
+        return islying;
     }
     public void cardPositionReset()
     {
@@ -140,18 +134,18 @@ public class Idoubt_N :CardGame_N
     }
     public void piletohand(int player)
     {
-        while(centralPile.Count>0)
+        while(discardpile.Count>0)
         {
             try
             {
-                hands[player].Add(centralPile.Last.Value);
-                centralPile.RemoveLast();
+                hands[player].Add(discardpile.Last.Value);
+                discardpile.RemoveLast();
                 hands[player][hands[player].Count-1].transform.localPosition = handspostions[player][hands[player].Count-1];
                 hands[player][hands[player].Count-1].transform.localRotation = hands[player][0].transform.localRotation;
             }
             catch(ArgumentOutOfRangeException e)
             {
-                Debug.Log("no place for cards ..... creating place"+e.Message);
+                DebugLog2("no place for cards ..... creating place"+e.Message);
                 for(int i=0;i<5;i++)
                 {
                     handspostions[player].Add(handspostions[player][handspostions[player].Count-1]+cardSpacing[player]);

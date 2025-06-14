@@ -88,7 +88,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   ShowTopMostFoldoutHeaderGroup: 1
-  setupinputcalled: 0
+  keyCodes: 
 --- !u!114 &-4830263747464741982
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -102,20 +102,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   ShowTopMostFoldoutHeaderGroup: 1
+  arrow: {fileID: 0}
 --- !u!114 &-2282073601452655168
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 779146150479949516}
-  m_Enabled: 0
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 2f67874e944934646a8e1d7b52002a1f, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  ShowTopMostFoldoutHeaderGroup: 1
---- !u!114 &6199135525665460717
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -124,10 +112,25 @@ MonoBehaviour:
   m_GameObject: {fileID: 779146150479949516}
   m_Enabled: 1
   m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 2f67874e944934646a8e1d7b52002a1f, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  ShowTopMostFoldoutHeaderGroup: 1
+  arrow: {fileID: 1180335910660548561, guid: 2ddb8212f487b0e4488308f6653bf3f2, type: 3}
+--- !u!114 &6199135525665460717
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 779146150479949516}
+  m_Enabled: 0
+  m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 6f49ebddb9818b54c8c374b57c70aaab, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
   ShowTopMostFoldoutHeaderGroup: 1
-  dropdownPrefab: []
+  arrow: {fileID: 0}
+  dropdownPrefab: {fileID: 0}
   passcheck: 00000000
   parentCanvas: {fileID: 0}
