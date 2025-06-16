@@ -15,7 +15,7 @@ namespace GameSystem
         public GameObject arrow;
         bool firsttime = true;
 
-        public virtual void EndGame()
+        public virtual void endGame()
         {
 
         }

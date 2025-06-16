@@ -13,24 +13,24 @@ public class Dominos:CardGame
     public Dominos(InputHandler inputHandler):base("Dominos",4,inputHandler)
     {
         gamestate="navigating";
-        centralpileLocalpos= new List<Vector3>();
-        discard_pileSpacing.Add(new Vector3(0.7f/5,0,0));
-        discard_pileSpacing.Add(new Vector3(0.7f/5,0,0));
-        centralpileLocalpos.Add(new Vector3(0,0,0));
-        centralpileLocalpos.Add(new Vector3(0,0,0));
-        discardpileRotation = new Vector3 (-90,0,0);
-        playerRotations = new List<Vector3> 
+        cardtransformations.centralpileLocalpos= new List<Vector3>();
+        cardtransformations.discard_pileSpacing.Add(new Vector3(0.7f/5,0,0));
+        cardtransformations.discard_pileSpacing.Add(new Vector3(0.7f/5,0,0));
+        cardtransformations.centralpileLocalpos.Add(new Vector3(0,0,0));
+        cardtransformations.centralpileLocalpos.Add(new Vector3(0,0,0));
+        cardtransformations.discardpileRotation = new Vector3 (-90,0,0);
+        cardtransformations.playerRotations = new List<Vector3> 
         {
             new Vector3(0, 0, 0), new Vector3(0, 90, 0), new Vector3(0, 180, 0), new Vector3(0, -90, 0)
         };
-        handspostions= new() 
+        cardtransformations.handspostions= new() 
         {   
         new List<Vector3> {new Vector3(-0.405f, 0, 0.571f) },
         new List<Vector3> {new Vector3(0.5f, 0, -0.24f) },
         new List<Vector3> {new Vector3(-0.405f, 0, -0.571f) },
         new List<Vector3> {new Vector3(-0.5f, 0, -0.24f)},
         };
-        oldscale=new Vector3(1f,1f,1f);
+        cardtransformations.oldscale=new Vector3(1f,1f,1f);
         table = GameObject.Instantiate(Resources.Load<GameObject>("Prefabs_N/DominoBoard_N"));
         table.GetComponent<NetworkObject>().Spawn();
         origin = GameObject.Instantiate(Resources.Load<GameObject>("Prefabs_N/DominoTable_N"));
@@ -43,11 +43,11 @@ public class Dominos:CardGame
         }
         shuffledeck(GameObjects);
         DealCards();
-        setupposition();
-        MovetoPostion();
+        callsetupposition();
+        cardtransformations.MovetoPostion(hands);
     }
 
-    public override void setupposition()
+    public override void callsetupposition()
     {
     for (int i = 0; i < hands.Count; i++)
         {
@@ -58,19 +58,19 @@ public class Dominos:CardGame
                 coordinates[i] += 0.1f;
                 if (i == 0)
                 {
-                    handspostions[i].Add(new Vector3(coordinates[i], 0, 0.571f)); 
+                    cardtransformations.handspostions[i].Add(new Vector3(coordinates[i], 0, 0.571f)); 
                 }
                 else if (i == 1)
                 {
-                    handspostions[i].Add(new Vector3(0.5f, 0, coordinates[i]));
+                    cardtransformations.handspostions[i].Add(new Vector3(0.5f, 0, coordinates[i]));
                 }
                 else if (i == 2)
                 {
-                    handspostions[i].Add(new Vector3(coordinates[i], 0, -0.571f));
+                    cardtransformations.handspostions[i].Add(new Vector3(coordinates[i], 0, -0.571f));
                 }
                 else
                 {
-                    handspostions[i].Add(new Vector3(-0.5f, 0, coordinates[i]));
+                    cardtransformations.handspostions[i].Add(new Vector3(-0.5f, 0, coordinates[i]));
                 }
             }
 

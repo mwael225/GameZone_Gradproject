@@ -25,17 +25,7 @@ public class hostclient : MonoBehaviour
 
     private async void Awake()
     {
-
-        // Initialize Unity Services
-        await UnityServices.InitializeAsync();
-
-        // Sign in anonymously
-        if (!AuthenticationService.Instance.IsSignedIn)
-        {
-            await AuthenticationService.Instance.SignInAnonymouslyAsync();
-            Debug.Log("Signed in as: " + AuthenticationService.Instance.PlayerId);
-        }
-
+        await authencateandsign();
         // Add button listeners
         startHostButton.GetComponent<Button>().onClick.AddListener(() =>
         {
@@ -68,6 +58,17 @@ public class hostclient : MonoBehaviour
             });
             canvas.SetActive(false);
         });
+    }
+    public async Task<string> authencateandsign()
+    {
+        await UnityServices.InitializeAsync();
+        // Sign in anonymously
+        if (!AuthenticationService.Instance.IsSignedIn)
+        { 
+            await AuthenticationService.Instance.SignInAnonymouslyAsync();
+            Debug.Log("Signed in as: " + AuthenticationService.Instance.PlayerId);
+        }
+        return AuthenticationService.Instance.PlayerId;
     }
 
     public async Task<string> StartHostWithRelay(int maxConnections, string connectionType)

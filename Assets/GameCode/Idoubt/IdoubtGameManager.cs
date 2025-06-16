@@ -18,7 +18,18 @@ namespace GameSystem
     private InputHandler inputHandler;
     private bool isOpen = false;
     private int currentIndex = 0;
-    
+    List<KeyCode> keyCodes = new List<KeyCode>
+        {
+            KeyCode.C,
+            KeyCode.X,
+            KeyCode.Space,
+            KeyCode.Q,
+            KeyCode.W,
+            KeyCode.A,
+            KeyCode.D,
+            KeyCode.P,
+            KeyCode.Return
+        };
     enum IdoubtGameState
     {
         Start,
@@ -31,6 +42,7 @@ namespace GameSystem
         {
             if (!IsServer) return;
             inputHandler = GetComponent<InputHandler>();
+            inputHandler.Keymap(keyCodes);
             idoubt = new Idoubt(inputHandler);
             dropdownPrefab = Resources.Load<GameObject>("Prefabs_N/Dropdown_Networked");
             Debug.Log(dropdownPrefab.name);//holds the canvas
@@ -193,7 +205,7 @@ namespace GameSystem
     public override int NextTurn(int noOfPlayers)
     {
         idoubt.navigatedCardindex=0;
-        idoubt.hands[currentTurn][idoubt.navigatedCardindex].transform.localScale = idoubt.oldscale;
+        idoubt.cardtransformations.scalecard(idoubt.hands[currentTurn][idoubt.navigatedCardindex]);
         idoubt.hands[currentTurn][idoubt.navigatedCardindex].GetComponent<Renderer>().material.color = Color.white;
         if(doubtcall)
         {

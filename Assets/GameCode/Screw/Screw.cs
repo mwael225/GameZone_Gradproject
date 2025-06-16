@@ -5,6 +5,7 @@ using System.Collections;
 using Unity.Netcode;
 public class Screw: CardGame
 {
+    
     string prefabpath = "ScrewDeck";
     public string[] specialcardsnames = { "Card_Seven", "Card_Eight", "Card_Nine", "Card_Ten", "Card_Match", "Card_Lookaround", "Card_Swap" };
 
@@ -31,18 +32,18 @@ public class Screw: CardGame
     public Screw(InputHandler inputHandler) : base("Screw", 4, inputHandler)
     {
         gameState = new GameState();
-        centralpileLocalpos = new List<Vector3>();
-        pickRotation = new List<Vector3>
+        cardtransformations.centralpileLocalpos = new List<Vector3>();
+        cardtransformations.pickRotation = new List<Vector3>
         {
             new Vector3(-120, 0, 0), new Vector3(0, 120, -90), new Vector3(120,0 ,180 ), new Vector3(0, -120, 90)
         };
-        discardpileRotation = new Vector3(0, 180, 180);
-        oldscale = new Vector3(150, 225, 0.540000081f);
-        playerRotations = new List<Vector3>
+        cardtransformations.discardpileRotation = new Vector3(0, 180, 180);
+        cardtransformations.oldscale = new Vector3(150, 225, 0.540000081f);
+        cardtransformations.playerRotations = new List<Vector3>
         {
             new Vector3(0, 0, 180), new Vector3(0, 0, 90), new Vector3(0,0 ,0), new Vector3(0, 0, -90)
         };
-        discard_pileSpacing = new List<Vector3> { new Vector3(0, 0, 0.005f) };
+        cardtransformations.discard_pileSpacing = new List<Vector3> { new Vector3(0, 0, 0.005f) };
         origin = GameObject.Instantiate(Resources.Load<GameObject>("Prefabs_N/Screw_CardDeck_N"));
         origin.GetComponent<NetworkObject>().Spawn();
         GameObjects = spawnobjects(prefabpath);
@@ -51,32 +52,32 @@ public class Screw: CardGame
             GameObjects[i].transform.SetParent(origin.transform);
         }
         shuffledeck(GameObjects);
+        callsetupposition();
         DealCards(4);
-        Assemble(deck);
-        setupposition();
-        MovetoPostion();
+        cardtransformations.Assemble(deck);
+        cardtransformations.MovetoPostion(hands);
     }
     public IEnumerator memorizecard()
     {
         for (int i = 0; i < hands.Count; i++)
         {
             hands[i][2].transform.Translate(0, 0, 1f);
-            hands[i][2].transform.localRotation = Quaternion.Euler(pickRotation[i]);
+            hands[i][2].transform.localRotation = Quaternion.Euler(cardtransformations.pickRotation[i]);
             hands[i][3].transform.Translate(0, 0, 1f);
-            hands[i][3].transform.localRotation = Quaternion.Euler(pickRotation[i]);
+            hands[i][3].transform.localRotation = Quaternion.Euler(cardtransformations.pickRotation[i]);
         }
         yield return new WaitForSeconds(10f);
         for (int i = 0; i < hands.Count; i++)
         {
-            hands[i][2].transform.localPosition = handspostions[i][2];
-            hands[i][2].transform.localRotation = Quaternion.Euler(playerRotations[i]);
-            hands[i][3].transform.localPosition = handspostions[i][3];
-            hands[i][3].transform.localRotation = Quaternion.Euler(playerRotations[i]);
+            hands[i][2].transform.localPosition = cardtransformations.handspostions[i][2];
+            hands[i][2].transform.localRotation = Quaternion.Euler(cardtransformations.playerRotations[i]);
+            hands[i][3].transform.localPosition = cardtransformations.handspostions[i][3];
+            hands[i][3].transform.localRotation = Quaternion.Euler(cardtransformations.playerRotations[i]);
         }
     }
-    public override void setupposition()
+    public override void callsetupposition()
     {
-        handspostions = new List<List<Vector3>>
+        cardtransformations.handspostions = new List<List<Vector3>>
             {
                 new()
                 {
@@ -95,8 +96,8 @@ public class Screw: CardGame
                     new Vector3(2f, -0.6f, 0f),new Vector3(2f, 0.5f, 0f),new Vector3(3.5f, -0.6f, 0f),new Vector3(3.5f, 0.5f, 0f), new Vector3(4.6f,-0.6f,0f),new Vector3(4.6f,0.5f,0f)
                 },
           };
-        centralpileLocalpos.Add(new Vector3(-1, 0, 0));
-        pickPosition = new List<Vector3>
+        cardtransformations.centralpileLocalpos.Add(new Vector3(-1, 0, 0));
+        cardtransformations.pickPosition = new List<Vector3>
             {
                 new Vector3(-0.4f, -3.7f, 1),
                 new Vector3(-3.9f, -0.033f, 1),
@@ -109,21 +110,23 @@ public class Screw: CardGame
         base.DealCards(numberofcards);
         discardpile.AddLast(deck[deck.Count - 1]);
         deck.RemoveAt(deck.Count - 1);
+        discardpile.Last.Value.transform.localPosition = cardtransformations.centralpileLocalpos[0];
+        discardpile.Last.Value.transform.Rotate(0, 180, 0);
     }
-    protected override void MovetoPostion()
+    public void ScrewMovetoPostion()
     {
-        base.MovetoPostion();
-        discardpile.First.Value.transform.localPosition = centralpileLocalpos[0];
+        cardtransformations.MovetoPostion(hands);
+        discardpile.First.Value.transform.localPosition = cardtransformations.centralpileLocalpos[0];
         discardpile.First.Value.transform.Rotate(0, 180, 0);
     }
     public void swapwpickedcard(int player)
     {
         Debug.Log("entered function");
         GameObject temp = hands[player][navigatedCardindex];
-        hands[player][navigatedCardindex].transform.localScale = oldscale;
+        hands[player][navigatedCardindex].transform.localScale = cardtransformations.oldscale;
         hands[player][navigatedCardindex] = pickedcard;
-        hands[player][navigatedCardindex].transform.localPosition = handspostions[player][navigatedCardindex];
-        hands[player][navigatedCardindex].transform.localRotation = Quaternion.Euler(playerRotations[player]);
+        hands[player][navigatedCardindex].transform.localPosition = cardtransformations.handspostions[player][navigatedCardindex];
+        hands[player][navigatedCardindex].transform.localRotation = Quaternion.Euler(cardtransformations.playerRotations[player]);
         throwcard(temp);
         pickedcard = null;
         gameState = GameState.NextTurn;
@@ -132,12 +135,12 @@ public class Screw: CardGame
     public void swapwdiscardpile(int player)
     {
         GameObject card = hands[player][navigatedCardindex];
-        hands[player][navigatedCardindex].transform.localScale = oldscale;
+        cardtransformations.scalecard(hands[player][navigatedCardindex]);
         hands[player][navigatedCardindex] = discardpile.Last.Value;
-        hands[player][navigatedCardindex].transform.localPosition = handspostions[player][navigatedCardindex];
-        hands[player][navigatedCardindex].transform.localRotation = Quaternion.Euler(playerRotations[player]);
+        hands[player][navigatedCardindex].transform.localPosition = cardtransformations.handspostions[player][navigatedCardindex];
+        hands[player][navigatedCardindex].transform.localRotation = Quaternion.Euler(cardtransformations.playerRotations[player]);
         discardpile.RemoveLast();
-        centralpileLocalpos[0] -= discard_pileSpacing[0];
+        cardtransformations.centralpileLocalpos[0] -= cardtransformations.discard_pileSpacing[0];
         throwcard(card);
         gameState = GameState.NextTurn;
     }
@@ -145,7 +148,7 @@ public class Screw: CardGame
     {
         if (gameState == GameState.Basra)
         {
-            hands[player][navigatedCardindex].transform.localScale = oldscale;
+            cardtransformations.scalecard(hands[player][navigatedCardindex]);
             throwCard(player, navigatedCardindex);
             pickedcard = null;
             gameState = GameState.NextTurn;
@@ -156,7 +159,7 @@ public class Screw: CardGame
             if (hands[player][navigatedCardindex].name.Split(" ")[0] == discardpile.Last.Value.name.Split(" ")[0])
             {
                 Debug.Log("they match");
-                hands[player][navigatedCardindex].transform.localScale = oldscale;
+                cardtransformations.scalecard(hands[player][navigatedCardindex]);
                 throwCard(player, navigatedCardindex);
                 gameState = GameState.NextTurn; 
                 navigatedCardindex = 0;
@@ -165,8 +168,7 @@ public class Screw: CardGame
             {
                 Debug.Log("they don't match");
                 hands[player].Add(discardpile.Last.Value);
-                hands[player][hands[player].Count - 1].transform.localPosition = handspostions[player][hands[player].Count - 1];
-                hands[player][hands[player].Count - 1].transform.localRotation = Quaternion.Euler(playerRotations[player]);
+                cardtransformations.moveandrotate(hands, player, hands[player].Count - 1, cardtransformations.handspostions, cardtransformations.playerRotations);
                 discardpile.RemoveLast();
                 gameState = GameState.NextTurn;
             }
@@ -177,12 +179,10 @@ public class Screw: CardGame
     {
         if (inputHandler.GetKeyDown(KeyCode.Return, player))
         {
-            hands[player][navigatedCardindex].transform.localScale = oldscale;
-            hands[player][navigatedCardindex].transform.localPosition = pickPosition[player];
-            hands[player][navigatedCardindex].transform.localRotation = Quaternion.Euler(pickRotation[player]);
+            cardtransformations.scalecard(hands[player][navigatedCardindex]);
+            cardtransformations.moveandrotate(hands, player, navigatedCardindex, cardtransformations.pickPosition, cardtransformations.pickRotation);
             yield return new WaitForSeconds(2f);
-            hands[player][navigatedCardindex].transform.localPosition = handspostions[player][navigatedCardindex];
-            hands[player][navigatedCardindex].transform.localRotation = Quaternion.Euler(playerRotations[player]);
+            cardtransformations.moveandrotate(hands, player, navigatedCardindex, cardtransformations.handspostions, cardtransformations.playerRotations);
             pickedcard = null;
             gameState = GameState.NextTurn;
         }
@@ -190,11 +190,10 @@ public class Screw: CardGame
     }
     public IEnumerator seeotherscard(int player)
     {
-        hands[naviagedplayerindex][navigatedplayercard].transform.localPosition = pickPosition[player];
-        hands[naviagedplayerindex][navigatedplayercard].transform.localRotation = Quaternion.Euler(pickRotation[player]);
+        GameObject card = hands[naviagedplayerindex][navigatedplayercard];
+        cardtransformations.moveandrotate(card, cardtransformations.pickPosition, cardtransformations.pickRotation, player);
         yield return new WaitForSeconds(2f);
-        hands[naviagedplayerindex][navigatedplayercard].transform.localPosition = handspostions[naviagedplayerindex][navigatedplayercard];
-        hands[naviagedplayerindex][navigatedplayercard].transform.localRotation = Quaternion.Euler(playerRotations[naviagedplayerindex]);
+        cardtransformations.moveandrotate(hands, naviagedplayerindex, navigatedplayercard, cardtransformations.handspostions, cardtransformations.playerRotations);
         gameState = GameState.NextTurn;
         firsttime = true;
         pickedcard = null;
@@ -215,7 +214,7 @@ public class Screw: CardGame
         for (int i = 0; i < hands[lookaroundplayercounter].Count; i++)
         {
             if (i != navigatedplayercard)
-                hands[lookaroundplayercounter][i].transform.localScale = oldscale;
+                cardtransformations.scalecard(hands[lookaroundplayercounter][i]);
         }
         if (inputHandler.GetKeyDown(KeyCode.Q, player))
         {
@@ -227,18 +226,17 @@ public class Screw: CardGame
         }
         if (inputHandler.GetKeyDown(KeyCode.Return, player))
         {
-            hands[lookaroundplayercounter][navigatedplayercard].transform.localPosition = pickPosition[player];
-            hands[lookaroundplayercounter][navigatedplayercard].transform.localRotation = Quaternion.Euler(pickRotation[player]);
+            GameObject card = hands[lookaroundplayercounter][navigatedplayercard];
+            cardtransformations.moveandrotate(card, cardtransformations.pickPosition, cardtransformations.pickRotation, player);
             yield return new WaitForSeconds(2f);
-            hands[lookaroundplayercounter][navigatedplayercard].transform.localPosition = handspostions[lookaroundplayercounter][navigatedplayercard];
-            hands[lookaroundplayercounter][navigatedplayercard].transform.localRotation = Quaternion.Euler(playerRotations[lookaroundplayercounter]);
+            cardtransformations.moveandrotate(hands, lookaroundplayercounter, navigatedplayercard, cardtransformations.handspostions, cardtransformations.playerRotations);
             lookaroundcounter++;
             navigatedplayercard = 0;
             Debug.Log("lookaroundcounter" + lookaroundcounter);
         }
         Debug.Log("lookaroundplayercounter" + lookaroundplayercounter);
         GameObject navigatedCard = hands[lookaroundplayercounter][navigatedplayercard];
-        navigatedCard.transform.localScale = oldscale * 1.2f;
+        cardtransformations.scalecard(navigatedCard, true);
         if (lookaroundcounter == 4)
         {
             lookedaround = true;
@@ -258,18 +256,18 @@ public class Screw: CardGame
         {
             if (i != navigatedplayercard)
             {
-                hands[naviagedplayerindex][i].transform.localScale = oldscale;
+                cardtransformations.scalecard(hands[naviagedplayerindex][i], false);
             }
         }
         if (inputHandler.GetKeyDown(KeyCode.A, player))
         {
-            hands[naviagedplayerindex][navigatedplayercard].transform.localScale = oldscale;
+            cardtransformations.scalecard(hands[naviagedplayerindex][navigatedplayercard]);
             navigatedplayercard = 0;
             naviagedplayerindex = ((naviagedplayerindex - 1 + hands.Count) % numberOfPlayers) != player ? (naviagedplayerindex - 1 + hands.Count) % numberOfPlayers : (naviagedplayerindex - 2 + hands.Count) % numberOfPlayers;
         }
         else if (inputHandler.GetKeyDown(KeyCode.D, player))
         {
-            hands[naviagedplayerindex][navigatedplayercard].transform.localScale = oldscale;
+            cardtransformations.scalecard(hands[naviagedplayerindex][navigatedplayercard], false);
             navigatedplayercard = 0;
             naviagedplayerindex = ((naviagedplayerindex + 1) % numberOfPlayers) != player ? (naviagedplayerindex + 1) % numberOfPlayers : (naviagedplayerindex + 2) % numberOfPlayers;
         }
@@ -285,7 +283,7 @@ public class Screw: CardGame
         }
         Debug.Log("navigatedplayerindex: " + naviagedplayerindex + " navigatedplayercard: " + navigatedplayercard);
         GameObject navigatedCard = hands[naviagedplayerindex][navigatedplayercard];
-        navigatedCard.transform.localScale = oldscale * 1.2f;
+        cardtransformations.scalecard(navigatedCard, true);
         yield return null;
     }
     public void scoresheet()
@@ -301,7 +299,6 @@ public class Screw: CardGame
         }
         for (int i = 0; i < scores.Length; i++)
         {
-
             Debug.Log("player " + i + " score: " + scores[i]);
         }
         showcards();
@@ -312,12 +309,12 @@ public class Screw: CardGame
         {
             for (int j = 0; j < hands[i].Count; j++)
             {
-                hands[i][j].transform.localScale = oldscale;
+                cardtransformations.scalecard(hands[i][j]);
                 hands[i][j].transform.Rotate(0, 180, 0);
             }
         }
     }
-    public void restock()
+    /*public void restock()
     {
         List<GameObject> list = new List<GameObject>();
         for (int i = 0; i < discardpile.Count; i++)
@@ -329,5 +326,5 @@ public class Screw: CardGame
         centralpileLocalpos[0]=new Vector3(-1, 0, 0);
         shuffledeck(list);
         Assemble(deck);
-    }
+    }*/
 }

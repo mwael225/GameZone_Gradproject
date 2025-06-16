@@ -1,0 +1,373 @@
+
+
+
+Department of Computer Science
+
+Graduation Project
+
+
+Final Report
+
+
+
+
+
+Project Title:	"GameZone"
+
+Project Team:	Mohamed Wael Mohamed
+	Karim ESSAC
+	Mahmoud Gameel
+	Mohamed Ahmed Mohamed
+	Mohamed Wael Salah
+	Maged Mohamed Sayed
+	Ahmed Mostafa
+	Mohamed Hamed Sayed
+
+Academic supervisor:	 Dr. Ahmed Kaboudan
+Assisting supervisor:	T.A Ammar Eid
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+June 2025
+Title Page
+"GameZone": A Unity-Based Game Engine for Casual and Strategy Games
+Submitted in partial fulfillment of the requirements for the degree of Bachelor of Computer Science
+
+Abstract
+"GameZone" is a multi-game platform developed using “Unity“ Game Engine, designed to provide users with a seamless and engaging platform to play a collection of popular board and card games. In a landscape where many standalone games exist, there is a lack of unified, lightweight platforms that deliver multiple games under one cohesive experience.
+The primary goal of this project was to create a user-friendly gaming platform that hosts seven games: Screw, Domino, Old Maid,“I Doubt“ ,Uno ,Chess, Checkers. Alongside the engine, a companion website was developed to allow users to download the platform, view detailed instructions on how to play, and contact support. The main achievements include the successful integration of all seven games  a clean user interface, and a fully functional and informative website.
+
+Acknowledgments
+
+We would like to express our deepest gratitude to our supervisor, Dr. Ahmed Kaboudan, and T.A. Ammar Eid for their invaluable guidance, encouragement, and continuous support throughout the course of this project. Their feedback and mentorship played a vital role in shaping the direction and quality of our work.
+Special thanks go to our fellow project teammates for their dedication, cooperation, and team spirit. Working together on this journey not only made the process smoother but also created an enjoyable and rewarding experience full of growth and learning.
+We are also thankful to our friends (cheering us on when things got challenging (even when they didn’t understand how to play the games!).
+This project would not have been possible without the collective effort and encouragement from everyone involved. Thank you all!
+
+Table of Contents
+Type chapter title (level 1)	1
+Type chapter title (level 2)	2
+Type chapter title (level 3)	3
+Type chapter title (level 1)	4
+Type chapter title (level 2)	5
+Type chapter title (level 3)	6
+
+List of Figures
+[Provide a numbered list of all figures included in the document, along with their titles and corresponding page numbers. Figures may include diagrams, charts, screenshots, and illustrations used to support explanations. Ensure proper referencing within the text.]
+
+
+
+
+List of Tables
+[Provide a numbered list of all tables included in the document, along with their titles and corresponding page numbers. Ensure proper referencing within the text.]
+
+
+1. Introduction
+In recent years, the popularity of digital board and card games has surged due to the accessibility and convenience of online play. While many individual games are available as standalone applications, there remains a lack of unified platforms that combine multiple tabletop games under a single, user-friendly platform. "GameZone" was developed to fill this gap by creating a cohesive environment where users can access and enjoy several well-known games without switching between different applications or interfaces.
+"GameZone" is a game platform developed using “Unity” game engine, containing seven tabletop games: Screw, Domino, Old Maid, Uno, “I Doubt”, Checkers, and Chess. These games span various categories—from strategy-based (Chess, Checkers) to casual and party-style games (Screw, I Doubt It, etc). The platform is designed to be partially-modular, allowing easy integration of future games. In addition to the platform there is a dedicated website has been developed to provide game instructions, download links, and a contact form for support.
+This report outlines the analysis, design, development, and evaluation process of "GameZone". The following sections will cover the project objectives, chosen methodology, implementation details, testing strategies, and conclusions.
+
+
+
+1.1 Project objectives
+The primary objective of "GameZone" is to develop a partially-modular gaming platform using “Unity” game engine that allows players to access and play seven tabletop games through a unified interface, supported by a companion website for game downloads, rules, and support.
+The main objectives of the project are:
+    • To implement seven tabletop games with consistent UI/UX using “Unity” game engine.
+    • To design a partially-modular architecture to simplify future game additions.
+    • To develop a website where users can:
+        ◦ Download the "GameZone" engine
+        ◦ Learn how to play each game
+        ◦ Contact support
+    • To ensure games are bug-free, intuitive, and responsive across common screen sizes.
+    • To complete the project within the defined academic timeline, following clear milestones and deliverables.
+
+These objectives are SMART:
+    • Specific: seven named games and a website
+    • Measurable: Each game and website feature is testable
+    • Achievable: Developed using “Unity” game engine  and web tools
+    • Relevant: Meets the demand for multi-game platforms
+    • Time-bound: Completed within the semester schedule
+
+1.2 Project Development Methodology (phases and process model)
+The Waterfall methodology was chosen due to its structured, sequential approach, which suits the clearly defined scope and deliverables of our project. Since each game has well-established rules and the website requirements were stable from the beginning, Waterfall allowed the team to plan thoroughly and execute each phase with minimal backtracking.
+Key Phases:
+    1. Requirement Gathering
+        ◦ Collected and documented the rules, mechanics, and gameplay flow for all seven games .
+        ◦ Defined the functional and non-functional requirements for both the game engine and the website.
+    2. System and Design Specification
+        ◦ Designed the partially-modular architecture of the game platform to support the seven games as independent components.
+        ◦ Created UI mockups for the game interface and the website layout.
+        ◦ Documented the system structure, data flow, and key interactions.
+    3. Implementation
+        ◦ Games to be developed simultaneously, ensuring parallel progress under a unified architecture.
+        ◦ The website and shared UI/UX components.
+        ◦ Development followed the designs without major changes, as per the Waterfall model.
+    4. Testing and Debugging
+        ◦ Conducted individual game testing to ensure rule compliance and correct logic.
+        ◦ Performed system integration testing to validate transitions and shared components.
+        ◦ Website was tested for usability, responsiveness, and cross-browser compatibility.
+    5. Deployment
+        ◦ Compiled the final version of the platform.
+        ◦ Published the website with downloadable content, game instructions, and support form.
+    6. Evaluation and Documentation
+        ◦ The project was reviewed internally by team members and externally by the supervisor.
+        ◦ Feedback was collected and final improvements were made before preparing the dissertation and project presentation.
+
+The Waterfall model provided a clear roadmap, suitable for our structured development tasks and deadlines. It enabled us to manage responsibilities efficiently across team members while ensuring a stable, predictable output.
+1.3 Project Plan
+
+
+1.4 Technologies and Tools
+The development of GameZone required a combination of game development, web development, and UI/UX design technologies. The selection of each tool was based on compatibility, ease of use, community support, and suitability for the project’s goals.
+
+Game Development :
+
+Purpose & Justification	Category	Technology / Tool
+Used to develop and manage the 3D games; offers beginner friendly platform with an abundance of tutorials.	Game Engine	Unity Game Engine
+Used for scripting within Unity. Chosen for its integration with Unity, and object-oriented design.	Programming Language	C#
+Backend services for matchmaking and connectivity between players in multiplayer games. 	Cloud service	Unity Gaming Services
+(Relay, Lobby)
+Used for coding and debugging Unity scripts; provides powerful C# support and Unity integration.	IDE	Visual Studio
+Provides networked multiplayer functionality for GameObjects in Unity 	Networking Framework 	Unity Netcode for Game objects
+
+Website Development : 
+Technology / Tool	Category	Purpose & Justification
+HTML/CSS	Frontend	Used to structure and style the website. 
+JavaScript	Frontend	Adds interactivity to the website 
+Bootstrap	CSS Framework	Ensures a responsive, mobile-friendly layout with minimal custom code.
+React.js	Frontend Library	Used to build a fast, partially-modular, and component-based web application. Enables efficient state management and reusable UI logic.
+Tailwind CSS	Utility-First CSS	Offers low-level utility classes to rapidly build custom user interfaces directly in the markup. 
+Material UI (MUI)	UI Component Library	Provides a set of prebuilt React components following Google’s Material Design.
+Joy UI 	Component Library	Used for advanced UI customization alongside MUI, providing flexibility in styling and interactivity.
+AOS (Animate on Scroll)	Animation Library	Adds smooth scroll animations to enhance user experience and draw attention to specific page elements.
+
+
+1.5 Definitions, Acronyms, and Abbreviations
+Term/Acronym	Definition
+Unity	A game engine used to create 2D and 3D games
+VS (Visual Studio)	A Microsoft IDE used for C# development
+HTML	HyperText Markup Language – standard for structuring web content
+CSS	Cascading Style Sheets – used for styling web pages
+JS (JavaScript)	A high-level programming language used for frontend interactivity
+Git-Github	A distributed version control system used for source code management
+C#	A modern, object-oriented programming language developed by Microsoft, used in Unity scripting
+IDE	Integrated Development Environment – software that provides tools for programming (e.g., Visual Studio)
+
+1.6 Report Structure
+[Provide an overview of the document’s organization. Briefly describe what each chapter covers to give readers a roadmap of the report. Ensure clarity and logical flow between sections.]
+
+
+
+2. Technology and Literature Survey
+[The main thrust of the chapter is a review of relevant work by other authors and the relationship between this and your own work. If several other people have done closely related work in a different way then the reasons for your approach should be summarized here.]
+[A literature review should cover a range of relevant material to your project. Everything you use should be cited by reference to the bibliography at the end of your dissertation. Everything that you write must be your own words and you must cite other people using references.]
+
+
+
+
+
+3. Requirements and Analysis (System Specification)
+The GameZone project aims to develop a game platform that multiple games can based on ,the platform consists of base classses and seven multiplayer games—Screw, Domino, Old Maid, Chess, Checkers, I Doubt It, UNO. The project also includes a supporting web platform that allows players to download the platform, access guides, and contact support.
+3.1 Business Models 
+GameZone is designed as a partially-modular, online-compatible game platform that has seven tabletop multiplayer games into one downloadable application. It is complemented by a responsive website that serves as a guide and support platform. The business model is built for free access.
+    • Value Proposition: Easy installation, low system requirements
+    • Target Users: Casual players of tabletop games
+    • Competitive Advantage: partially-modular Design: Easy to expand with new games in future updates
+3.2 System Description
+The GameZone system is a game platform developed using Unity, designed to host a collection of seven multiplayer games in a unified, partially-modular environment. Accompanying the engine is a React-based web platform that provides users with access to game downloads, gameplay instructions, and support services.
+Main Purpose: 
+The primary goal of GameZone is to offer a seamless and consistent experience for users who want to play well-known tabletop multiplayer games within a single application. It eliminates the need for players to switch between different applications or platforms to enjoy these games and introduces a standardized user interface and unified gameplay experience.
+Key Features
+    •  partially-modular Game Architecture: Each of the seven games (Screw, Domino, Old Maid, Chess, Checkers, I Doubt It, UNO) .
+    •  Web Platform: A supporting website that allows players to:
+        ◦ Download the GameZone platform
+        ◦ Read detailed game instructions
+        ◦ Contact support or submit feedback
+    •  Shared UI/UX System: Uniform menus, settings, and in-game UI for all games.
+    •  Multiplayer Support: All games are designed for 2 or more players online.
+    •  Flexible Game Integration: The architecture allows new games to be easily added in the future.
+System Functionality
+    1. Game platform 
+        ◦ On launch, the game platform displays a main menu with the option to create or join a game room.
+        ◦ Games are played in online multiplayer mode .
+        ◦ Shared features include sound settings,room design, ui/ux.
+    2. Website (React-based)
+        ◦ The homepage presents an overview of GameZone and available games.
+        ◦ Each game has a dedicated page containing rules, how-to-play guides, and visuals.
+        ◦ A contact page allows users to report issues or send feedback.
+        ◦ Built using React, Tailwind CSS, Material UI, Joy UI, and AOS for animations and responsiveness.
+Core Components
+    • Frontend (Web):
+        ◦ React handles the website interface and navigation.
+    • Backend (Internal Game Logic):
+        ◦ Baseclasses that handle the core game logic , networking , inputhandling,Game Manegment.
+        ◦ Each game has its own class and Game Manager.
+    • Support System:
+        ◦ Web contact form allows players to get assistance or provide feedback.
+User Interactions
+    • Players access GameZone by downloading it from the website.
+    • Users visit the website for help, game instructions, and general project information.
+
+3.2.1 System Context & Scope
+[Define the boundaries of the system, including what is within scope and what is excluded. Provide a system context diagram if applicable, showing interactions with external entities (e.g., users, third-party services, databases).]
+
+3.2.2 System Models
+[Present different models that represent the system’s structure and behavior. Common models include case diagrams, data flow diagrams (DFD), entity-relationship diagrams (ERD), and system architecture diagrams. Explain each model's role in understanding the system.]
+
+3.2.3 Functional Requirements
+[List the specific functions and features the system must provide. Each requirement should be clear, measurable, and testable. Use a structured format (e.g., numbered list or table) to ensure clarity.]
+
+3.2.4 Data Requirements
+[Describe the data the system will store, process, and manage. Specify data types, formats, and storage methods. Include details about databases, data flow, and any constraints related to data security and integrity.]
+
+3.2.5 Non-Functional Requirements	
+Attribute	Description
+Performance	Each game loads within 10 seconds; website loads in <2 seconds
+Scalability	New games can be added to the engine easily
+Usability	Simple controls; consistent UI across games and website
+Maintainability	partially-modular Unity scenes per game; reusable web components in React
+Accessibility	Website uses high contrast themes, readable fonts, and mobile support
+Portability	Game engine exportable to PC, Mac, and Android platforms
+Reliability	Game logic fails gracefully; engine returns to menu on error
+
+
+
+
+
+4. System Design
+[This should explain the design technique chosen (and justify why it is appropriate) from the various ones available; it should select a suitable subset of the things described in the analysis chapter and develop a design. Where trade-offs exist between different designs, the chosen approach should be justified. Suitable diagram techniques (e.g. UML, other drawings) should be used where appropriate.]
+
+4.1 System Architecture 
+[Provide an overview of the architecture, including a diagram showing major system components and their interactions.]
+
+4.2 Data Base Design
+[Describe the database structure, including key tables, attributes, and relationships. Provide schema diagrams to visually represent the data model. Explain normalization techniques, indexing strategies, and data integrity constraints.]
+
+4.3 Functional Design
+[Describe how the system's functionalities are designed and implemented. Explain key modules, their interactions, and workflows. Use diagrams (such as flowcharts or sequence diagrams) to illustrate system processes. Ensure alignment with the functional requirements defined earlier.]
+
+4.4 User Interface design
+[Describe the design of the system’s user interface (UI), including layout, navigation, and usability principles. Provide wireframes, mockups, or screenshots to illustrate key screens. Explain how the design enhances user experience (UX) and accessibility.]
+4.4.1 UI/UX Considerations for Multi-Platform
+[This section documents design decisions for Web and Mobile UI/UX.]
+
+4.5 System Integration 
+[This section describes how different system components (Mobile, Web, AI) communicate: 
+- **Architecture of Interactions** (Intercommunication among Mobile, Web, and AI components)
+- **API Endpoints & Data Flow** 
+- **Authentication & Security]
+
+
+
+5. Implementation 
+[In addition to illustrating "coding traps", this should highlight particular novel aspects to algorithms.] 
+
+5.1 Modules specifications
+[Provide detailed descriptions of each system module, including their purpose, inputs, processing logic, and outputs. Use a structured format or table to list module specifications, ensuring clarity in functionality and dependencies.]
+
+5.2 Forms and Reports
+[Describe the key forms (input interfaces) and reports (output data) used in the system. Include details about their structure, purpose, and how they interact with the database. Provide sample designs or screenshots where applicable.]
+
+5.3 Source code
+      <Reference to Commented source code>
+[Provide an overview of the source code structure, including key files, directories, and their functions. Highlight critical code snippets, algorithms, or logic implementations. Avoid including full source code; instead, reference where the complete code is stored.]
+
+
+
+6. Testing
+The GameZone project underwent thorough testing to ensure functionality, responsiveness, and performance across both the game engine (Unity-based) and the accompanying website (React-based). 
+
+6.1 Testing Approach
+We adopted a manual, iterative testing strategy across the project lifecycle. Given the partially-modular structure of GameZone, the testing approach was broken down into the following phases:
+    • Unit Testing:
+        ◦ Individual scripts and components (e.g.,game mechanics , card logic, score counters, game states) were tested during development in Unity.
+    • Integration Testing:
+        ◦ Each game module was tested as it was integrated into the main engine to ensure shared components worked consistently across all games.
+    • System Testing:
+        ◦ Entire games were played repeatedly by team members and testers to evaluate full end-to-end game flows.
+        ◦ Focus was placed on rule enforcement, UI transitions, game restarts, and error handling.
+    • Website Testing:
+        ◦ Responsiveness was tested on different screen sizes (desktop, tablet, and mobile).
+        ◦ Navigation performance, animation smoothness, and loading times were evaluated using browser developer tools.
+    • User Acceptance Testing:
+        ◦ Friends were invited to interact with both the game platform and the website and provide feedback based on ease of use and functionality.
+No automated testing frameworks were used due to the interactive nature of the games, making manual functional and usability testing the most practical and effective approach.
+
+
+
+6.2 Testing Environment
+Component	Configuration
+Development Tools	Unity 6, Visual Studio Code, Chrome DevTools, React DevTools
+Operating Systems	Windows 10, Windows 11 (for testing the Unity engine and games)
+Web Browsers	Google Chrome, Mozilla Firefox, Microsoft Edge
+Devices	Laptops (Core i5/i7, 8–16GB RAM), smartphones
+Network Conditions	Real-world Wi-Fi environment for site loading speed and responsiveness testing
+
+
+
+6.3 Test Cases
+Here is a representative table of the test cases:
+Test ID	Description	Input	Expected Output	Actual Result	Status
+TC01	Start a new game (Old Maid)	Click on "Old Maid"	Game loads with player interface	Game loaded correctly	Passed
+TC02	Win condition in Screw	Player finishes first	Victory screen appears	Works as expected	Passed
+TC03	Restart game button	Click "Restart" during play	Game resets to initial state	Works correctly	Passed
+TC04	Website responsiveness (mobile)	Open site on mobile browser	Content fits screen, menu accessible	Responsive layout works	Passed
+TC005	Access game instructions	Click "How to Play" link	Instructions appear clearly	Instructions show correctly	Passed
+TC006	Invalid move detection (Chess)	Move piece illegally	Game blocks move	Invalid moves rejected	Passed
+TC007	Page animation smoothness (AOS)	Scroll through homepage	Animations trigger smoothly	Smooth and glitch-free	Passed
+
+
+
+6.4 Testing Results
+Status	Count
+Passed	25
+Failed	0
+Pending	0
+All test cases passed successfully. Minor usability feedback from peer testers (e.g., improving card click hitboxes and adding sound feedback) was implemented promptly. No critical bugs or crashes were encountered during final testing rounds.
+
+6.5 Performance Benchmarking & Load Testing
+Game Performance
+    • Unity engine builds ran smoothly on low-end PCs (6GB+ RAM).
+    • No noticeable lags or crashes while switching between game modules.
+Web Performance
+    • Website is loaded in no time.
+    • AOS animations performed smoothly even on mobile.
+    • No layout shifts or UI glitches were observed under different screen sizes.
+
+
+
+7. Conclusions 
+[The conclusions can be summarized in a short chapter (2 or 3 pages). This chapter brings together many of the points that you will have made in other chapters, especially in the previous results and discussion chapter. Do not be afraid of repeating some of your earlier statements here, albeit using different wording.]
+
+7.1 Summary of achieved results
+[Provide an overview of the project's key accomplishments. Summarize how the system meets the initial objectives, highlighting major functionalities implemented, performance outcomes, and user feedback. Mention any challenges encountered and how they were addressed.]
+
+7.2 Possible extensions and further development 
+[Discuss potential improvements, enhancements, or new features that could be added in future iterations of the project. Highlight areas where the system can be scaled, optimized, or integrated with emerging technologies. Consider feedback from users and stakeholders to suggest meaningful developments.]
+
+Appendices
+[These may be provided to include further details of results, mathematical derivations, certain illustrative parts of program code (e.g. class interfaces), user documentation, log of project milestones.  In particular, if there are technical details of the work done that might be useful to others who wish to build on this work, but that are not sufficiently important to the project as a whole to justify being discussed in the main body of the dissertation, and then they should be included as appendices.] 
+
+Program code
+[Do not include an appendix containing all your source code listings - instead this material will be collected electronically.  What may be worth doing, perhaps, is that if there are any code fragments of novelty, then you could include these in an appendix, so that they could be referenced in any descriptions in the main text of the chapters. The code itself should also be commented.] 
+
+References
+[It is very important that you acknowledge any of the work of others that you use or adapt in your own work, or that provides the essential background or context to your dissertation.] 
+[List all sources cited in the document, following a consistent citation style (e.g., IEEE, APA, or Harvard). Include books, journal articles, websites, and other relevant materials. Ensure proper formatting and completeness for each reference.]
+
+
+

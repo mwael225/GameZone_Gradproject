@@ -7,14 +7,11 @@ namespace GameSystem
 {
     public class CardGame: Game
     {
-        
-        public List<Vector3> playerRotations,cardSpacing ,pickPosition,pickRotation,discard_pileSpacing,centralpileLocalpos ; 
+        public CardTransformations cardtransformations;
         public List<GameObject> deck;
         public string  gamestate;
         public LinkedList<GameObject> discardpile;
-        public List<List<Vector3>> handspostions ;
         public List<List<GameObject>> hands;
-        public Vector3 oldscale,discardpileRotation ;
         public int cplayer,navigatedCardindex = 0;
         public List<int> selectedCardsindex ;
         public GameObject pickedcard;
@@ -22,7 +19,8 @@ namespace GameSystem
 
         public CardGame(string name, int numberOfPlayers,InputHandler inputHandler) : base(name, numberOfPlayers,inputHandler)
         {
-            if(inputHandler!=null)
+            cardtransformations = new CardTransformations();
+            if (inputHandler != null)
             {
                 Debug.Log("Input handler is not null");
             }
@@ -33,21 +31,8 @@ namespace GameSystem
                 new List<GameObject> {},new List<GameObject> {},new List<GameObject> {},new List<GameObject> {},
                 };
             discardpile = new LinkedList<GameObject>();
-            discard_pileSpacing= new List<Vector3>();
             
         }
-
-        protected virtual void Assemble(List<GameObject> deck)
-        {
-            for (int i = 0; i < deck.Count; i++)
-            {
-                deck[i].transform.localPosition = new Vector3(0, 0,discard_pileSpacingZ);
-                discard_pileSpacingZ += 0.005f;
-            }
-            discard_pileSpacingZ = 0;
-        }
-
-
         public virtual void shuffledeck(List<GameObject> cards)
         {
             System.Random rand = new System.Random();
@@ -76,43 +61,29 @@ namespace GameSystem
         }
         public virtual void DealCards()
         {
-            while(deck.Count>0)
+            while (deck.Count > 0)
             {
                 for (int i = 0; i < numberOfPlayers; i++)
                 {
-                    if(deck.Count!=0)
+                    if (deck.Count != 0)
                     {
-                    hands[i].Add(deck[deck.Count - 1]);
-                    deck.RemoveAt(deck.Count - 1);  
+                        hands[i].Add(deck[deck.Count - 1]);
+                        deck.RemoveAt(deck.Count - 1);
                     }
                 }
+        
             }
-        }
-        protected virtual void MovetoPostion()
-        {
-            for (int i = 0; i < hands.Count; i++)
-            {
-                for (int j = 0; j < hands[i].Count; j++)
-                {
-                    
-                //hands[i][j].transform.Rotate(playerrotations[i]);
-                hands[i][j].transform.localRotation=Quaternion.Euler(playerRotations[i]);
-                hands[i][j].transform.localPosition = handspostions[i][j];
-                
-                }
-        }
         }
 
         public virtual GameObject PickCard(int player)
         {
             GameObject card = deck[deck.Count - 1];
             deck.RemoveAt(deck.Count - 1);
-            card.transform.localPosition = pickPosition[player];
-            card.transform.localRotation = Quaternion.Euler(pickRotation[player]);
+            cardtransformations.MovetoPickPostion(card, player);
             return card;    
         }
 
-        public virtual void setupposition(){}
+        public virtual void callsetupposition(){cardtransformations.SetupPosition();}
 
         public virtual IEnumerator navigatedCards(int currentPlayer=0)
         {
@@ -128,12 +99,12 @@ namespace GameSystem
                     {
                         if(!selectedCardsindex.Contains(i))
                         {
-                        hands[currentPlayer][i].transform.localScale = oldscale;
+                        cardtransformations.scalecard(hands[currentPlayer][i]);
                         }
                     }
                     else
                     {
-                        hands[currentPlayer][i].transform.localScale = oldscale;
+                        cardtransformations.scalecard(hands[currentPlayer][i]);
                     }
                 }
             
@@ -150,13 +121,13 @@ namespace GameSystem
                 if(!selectedCardsindex.Contains(navigatedCardindex))
                 {
                 GameObject navigatedCard = hands[currentPlayer][navigatedCardindex];
-                navigatedCard.transform.localScale = oldscale * 1.2f;
+                cardtransformations.scalecard(navigatedCard,true);
                 }
             }
             else
             {
                 GameObject navigatedCard = hands[currentPlayer][navigatedCardindex];
-                navigatedCard.transform.localScale = oldscale * 1.2f;
+                cardtransformations.scalecard(navigatedCard,true);
             }
             yield return null;
         }
@@ -172,34 +143,23 @@ namespace GameSystem
             if(place =="last")
             {
             discardpile.AddLast(card);
-            card.transform.localScale = oldscale;
-            card.transform.localPosition = centralpileLocalpos[0];
-            centralpileLocalpos[0]+=discard_pileSpacing[0];
+            cardtransformations.scalecard(card);
+            cardtransformations.movetodiscardpile(card,place);
             }
             else 
             {  
             discardpile.AddFirst(card);
-            card.transform.localScale = oldscale;
-            centralpileLocalpos[1]-=discard_pileSpacing[1];
-            card.transform.localPosition = centralpileLocalpos[1];
+            cardtransformations.scalecard(card);
+            cardtransformations.movetodiscardpile(card,place);
             }
-            card.transform.localRotation = Quaternion.Euler(discardpileRotation);
         }
         public virtual void throwcard(GameObject card,string place="last")
         {
             discardpile.AddLast(card);
-            card.transform.localScale = oldscale;
-            centralpileLocalpos[0]+=discard_pileSpacing[0];
-            card.transform.localPosition = centralpileLocalpos[0];
-            Debug.Log("discard pile last is "+discardpile.Last.Value.name);
-            card.transform.localRotation = Quaternion.Euler(discardpileRotation);
+            cardtransformations.scalecard(card);
+            cardtransformations.movetodiscardpile(card,place);
         }
-        public virtual int Zangles()
-        {
-            System.Random random = new System.Random();
-            int number=random.Next(-15, 15);
-            return number;
-        }
+
                 
     }
 } 

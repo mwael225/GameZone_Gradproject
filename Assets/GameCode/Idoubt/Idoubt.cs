@@ -12,8 +12,8 @@ public class Idoubt :CardGame
     
     public Idoubt(InputHandler inputHandler) : base("Idoubt", 4, inputHandler)
     {
-        discardpileRotation = new Vector3(180, 0, 0);
-        oldscale = new Vector3(7f, 7f, 7f);
+        cardtransformations.discardpileRotation = new Vector3(180, 0, 0);
+        cardtransformations.oldscale = new Vector3(7f, 7f, 7f);
         origin = GameObject.Instantiate(Resources.Load<GameObject>("Prefabs_N/Card_Deck_N"));
         origin.GetComponent<NetworkObject>().Spawn();
         GameObjects=spawnobjects("Card_Deck");
@@ -23,28 +23,28 @@ public class Idoubt :CardGame
         }
         shuffledeck(GameObjects);
         DealCards();
-        setupposition();
-        MovetoPostion();
+        callsetupposition();
+        cardtransformations.MovetoPostion(hands);
         selectedCardsindex = new List<int>();
-        centralpileLocalpos = new List<Vector3> { new Vector3(0, 0, 0) };
-        discard_pileSpacing = new List<Vector3> { new Vector3(0, 0, 0.005f) };
+        cardtransformations.centralpileLocalpos = new List<Vector3> { new Vector3(0, 0, 0) };
+        cardtransformations.discard_pileSpacing = new List<Vector3> { new Vector3(0, 0, 0.005f) };
 
     }
-    public override void setupposition()
+    public override void callsetupposition()
     {
-        cardSpacing = new List<Vector3>()
+        cardtransformations.cardSpacing = new List<Vector3>()
             {
                 new Vector3(-0.034975f, -0.001f, 0)*6,
                 new Vector3(0.001f, -0.034975f, 0)*6,
                 new Vector3(-0.034975f, -0.001f, 0)*6,
                 new Vector3(0.001f, -0.034975f, 0)*6,
             };
-        playerRotations = new List<Vector3>
+        cardtransformations.playerRotations = new List<Vector3>
                 {
                     new Vector3(90, 0, 0), new Vector3(0, -90, -90), new Vector3(-90,0 ,180), new Vector3(0,90, 90)
                 };
 
-        handspostions = new List<List<Vector3>>()
+        cardtransformations.handspostions = new List<List<Vector3>>()
             {
                 new List<Vector3> { new Vector3(0.25f, -0.49f, 0.3f)*5 },
                 new List<Vector3> { new Vector3(-0.612f, 0.231f, 0.3f)*5 },
@@ -55,7 +55,7 @@ public class Idoubt :CardGame
             {
                 for (int j = 0; j < hands[i].Count; j++)
                 {
-                    handspostions[i].Add(handspostions[i][handspostions[i].Count-1]+ cardSpacing[i]);
+                    cardtransformations.handspostions[i].Add(cardtransformations.handspostions[i][cardtransformations.handspostions[i].Count-1]+ cardtransformations.cardSpacing[i]);
                 }
             }
     }
@@ -64,14 +64,14 @@ public class Idoubt :CardGame
         if (selectedCardsindex.Contains(index))
         {
                 selectedCardsindex.Remove(index);
-                hands[player][index].transform.localScale=oldscale;
+                cardtransformations.scalecard(hands[player][index],false);
                 hands[player][index].GetComponent<Renderer>().material.color=Color.white;
         }
         else    
         {       if(selectedCardsindex.Count<4)
                 {
                 selectedCardsindex.Add(index);
-                hands[player][index].transform.localScale = oldscale*1.2f;
+                cardtransformations.scalecard(hands[player][index],true);
                 hands[player][index].GetComponent<Renderer>().material.color = Color.yellow;
                 }
                 else
@@ -90,9 +90,9 @@ public class Idoubt :CardGame
         }
         for(int i=0;i<prev_play.Count;i++)
         {
-            prev_play[i].transform.localScale = oldscale;
+            cardtransformations.scalecard(prev_play[i],false);
             prev_play[i].GetComponent<Renderer>().material.color=Color.white;
-            discardpileRotation += new Vector3(0,0,Zangles());
+            cardtransformations.discardpileRotation += new Vector3(0,0,cardtransformations.Zangles());
             throwCard(player,hands[player].IndexOf(prev_play[i]));
         }
         if(hands[player].Count==0)
@@ -124,13 +124,14 @@ public class Idoubt :CardGame
     }
     public void cardPositionReset()
     {
-        for(int i=0;i<hands.Count;i++)
+        cardtransformations.MovetoPostion(hands);
+        /*for(int i=0;i<hands.Count;i++)
         {
             for(int j=0;j<hands[i].Count;j++)
             {
                 hands[i][j].transform.localPosition = handspostions[i][j];
             }
-        }
+        }*/
     }
     public void piletohand(int player)
     {
@@ -140,18 +141,16 @@ public class Idoubt :CardGame
             {
                 hands[player].Add(discardpile.Last.Value);
                 discardpile.RemoveLast();
-                hands[player][hands[player].Count-1].transform.localPosition = handspostions[player][hands[player].Count-1];
-                hands[player][hands[player].Count-1].transform.localRotation = hands[player][0].transform.localRotation;
+                cardtransformations.moveandrotate(hands,player,hands[player].Count-1,cardtransformations.handspostions,cardtransformations.playerRotations);
             }
             catch(ArgumentOutOfRangeException e)
             {
                 DebugLog2("no place for cards ..... creating place"+e.Message);
                 for(int i=0;i<5;i++)
                 {
-                    handspostions[player].Add(handspostions[player][handspostions[player].Count-1]+cardSpacing[player]);
+                    cardtransformations.handspostions[player].Add(cardtransformations.handspostions[player][cardtransformations.handspostions[player].Count-1]+cardtransformations.cardSpacing[player]);
                 }
-                hands[player][hands[player].Count-1].transform.localPosition = handspostions[player][hands[player].Count-1];
-                hands[player][hands[player].Count-1].transform.localRotation = hands[player][0].transform.localRotation;
+                cardtransformations.moveandrotate(hands,player,hands[player].Count-1,cardtransformations.handspostions,cardtransformations.playerRotations);
             }
         }
     }

@@ -25,7 +25,6 @@ public class MenuManager1 : MonoBehaviour
             navindex = (navindex + 1) % menuItems.Count; // Increment navindex and wrap around using modulo
             updateMenu();
         }
-
         if (Input.GetKeyDown(KeyCode.UpArrow))
         {
             navindex = (navindex - 1 + menuItems.Count) % menuItems.Count; // Decrement navindex
@@ -34,7 +33,6 @@ public class MenuManager1 : MonoBehaviour
         if (Input.GetKeyDown(KeyCode.Return))
         {
             choosegame();
-
         }
     }
     void updateMenu()

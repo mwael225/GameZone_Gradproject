@@ -12,9 +12,9 @@ GameObject:
   - component: {fileID: 811344078392813705}
   - component: {fileID: 1893157944525632989}
   - component: {fileID: -4579841466484245829}
-  - component: {fileID: -4830263747464741982}
   - component: {fileID: -2282073601452655168}
-  - component: {fileID: 6199135525665460717}
+  - component: {fileID: 8075230029912755308}
+  - component: {fileID: -8721799881698815582}
   m_Layer: 0
   m_Name: GameManager_N
   m_TagString: Untagged
@@ -89,7 +89,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   ShowTopMostFoldoutHeaderGroup: 1
   keyCodes: 
---- !u!114 &-4830263747464741982
+--- !u!114 &-2282073601452655168
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -98,12 +98,29 @@ MonoBehaviour:
   m_GameObject: {fileID: 779146150479949516}
   m_Enabled: 0
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 01f59cd0cf7555b4e9f0a16d7e1e852a, type: 3}
+  m_Script: {fileID: 11500000, guid: 2f67874e944934646a8e1d7b52002a1f, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  ShowTopMostFoldoutHeaderGroup: 1
+  arrow: {fileID: 1180335910660548561, guid: 2ddb8212f487b0e4488308f6653bf3f2, type: 3}
+--- !u!114 &8075230029912755308
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 779146150479949516}
+  m_Enabled: 0
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a4546c1cb39bb10459a6dc2fe1902092, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
   ShowTopMostFoldoutHeaderGroup: 1
   arrow: {fileID: 0}
---- !u!114 &-2282073601452655168
+  dropdownPrefab: {fileID: 0}
+  passcheck: 00000000
+  parentCanvas: {fileID: 0}
+--- !u!114 &-8721799881698815582
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -112,25 +129,8 @@ MonoBehaviour:
   m_GameObject: {fileID: 779146150479949516}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 2f67874e944934646a8e1d7b52002a1f, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  ShowTopMostFoldoutHeaderGroup: 1
-  arrow: {fileID: 1180335910660548561, guid: 2ddb8212f487b0e4488308f6653bf3f2, type: 3}
---- !u!114 &6199135525665460717
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 779146150479949516}
-  m_Enabled: 0
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 6f49ebddb9818b54c8c374b57c70aaab, type: 3}
+  m_Script: {fileID: 11500000, guid: f46cb2a8fb6594f459556b30327eba38, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
   ShowTopMostFoldoutHeaderGroup: 1
   arrow: {fileID: 0}
-  dropdownPrefab: {fileID: 0}
-  passcheck: 00000000
-  parentCanvas: {fileID: 0}

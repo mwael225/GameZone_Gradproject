@@ -219,7 +219,8 @@ namespace GameSystem
             if (screw.gameState == Screw.GameState.NextTurn)
             {
                 screw.gameState = Screw.GameState.Normal;
-                screw.hands[currentTurn][screw.navigatedCardindex].transform.localScale = screw.oldscale;
+                screw.cardtransformations.scalecard(screw.hands[currentTurn][screw.navigatedCardindex]);
+                screw.navigatedCardindex = 0;
                 if (screwdeclared)
                 {
                     endgamecounter++;
@@ -251,23 +252,15 @@ namespace GameSystem
                 StopCoroutine(screw.navigateplayers(currentTurn));
                 screw.hands[currentTurn][screw.navigatedCardindex]=screw.hands[screw.naviagedplayerindex][screw.navigatedplayercard];
                 screw.hands[screw.naviagedplayerindex][screw.navigatedplayercard] = card1;
-                screw.hands[currentTurn][screw.navigatedCardindex].transform.localPosition =screw.handspostions[currentTurn][screw.navigatedCardindex];
-                screw.hands[screw.naviagedplayerindex][screw.navigatedplayercard].transform.localPosition =screw.handspostions[screw.naviagedplayerindex][screw.navigatedplayercard];
-                screw.hands[currentTurn][screw.navigatedCardindex].transform.localRotation = Quaternion.Euler(screw.playerRotations[currentTurn]);  
-                screw.hands[screw.naviagedplayerindex][screw.navigatedplayercard].transform.localRotation = Quaternion.Euler(screw.playerRotations[screw.naviagedplayerindex]);
+                screw.cardtransformations.moveandrotate(screw.hands, currentTurn, screw.navigatedCardindex, screw.cardtransformations.handspostions, screw.cardtransformations.playerRotations);
+                screw.cardtransformations.moveandrotate(screw.hands, screw.naviagedplayerindex, screw.navigatedplayercard, screw.cardtransformations.handspostions, screw.cardtransformations.playerRotations);
                 screw.gameState = Screw.GameState.NextTurn;
                 screw.pickedcard = null;   
             }
         }
         public void UpdatecardPositions()
         {
-            for(int i = 0; i < screw.hands.Count; i++)
-            {
-                for(int j = 0; j < screw.hands[i].Count; j++)
-                {
-                    screw.hands[i][j].transform.localPosition = screw.handspostions[i][j];
-                }
-            }
+            screw.cardtransformations.MovetoPostion(screw.hands);
         }
     }
 }

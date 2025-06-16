@@ -1,5 +1,6 @@
 using UnityEngine;
 using Unity.Netcode;
+using System.Collections.Generic;
 namespace GameSystem
 {
     public class DominosGameManager:GameManager
@@ -9,11 +10,21 @@ namespace GameSystem
         //enum Gamestate gamestate ={navitgaing,choosing}
         InputHandler inputHandler;
         int[] scores={0,0,0,0};
+        List<KeyCode> keyCodes = new List<KeyCode>
+        {
+            KeyCode.P,
+            KeyCode.Return,
+            KeyCode.Q,
+            KeyCode.W,
+            KeyCode.Alpha1,
+            KeyCode.Alpha2
+        };
         public void Start()
         {
             if (IsServer)
             {
                 inputHandler = GetComponent<InputHandler>();
+                inputHandler.Keymap(keyCodes);
                 dominos = new Dominos(inputHandler);
                 currentTurn = firstplayer();
                 Debug.Log("Current turn: " + currentTurn);
@@ -76,7 +87,7 @@ namespace GameSystem
                     }
 
                 }
-                else if (inputHandler.GetKeyDown(KeyCode.Space,currentTurn))
+                else if (inputHandler.GetKeyDown(KeyCode.P,currentTurn))
                 {
                     Debug.Log("pass");
                     currentTurn=NextTurn(dominos.numberOfPlayers);
@@ -86,11 +97,11 @@ namespace GameSystem
             else
             {
                 Debug.Log("End game");
-                EndGame();
+                endGame();
             }
 
         }
-        public override void EndGame()
+        public override void endGame()
         {
             Debug.Log("Game Over");
             for(int i=0;i<dominos.hands.Count;i++)
