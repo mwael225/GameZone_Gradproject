@@ -6,7 +6,7 @@ public class spawnplayers : NetworkBehaviour
 {
     // Start is called once before the first execution of Update after the MonoBehaviour is created
     public List<GameObject> playerPrefabs = new List<GameObject>();
-    public GameObject gameMangagerPrefab;
+    public GameObject GameMenu;
 
     void Start()
     {
@@ -52,7 +52,7 @@ public class spawnplayers : NetworkBehaviour
         if (NetworkManager.Singleton.ConnectedClients.Count ==1&& NetworkManager.Singleton.IsServer)
         {
             Debug.Log("Spawning game manager as two players are connected.");
-            GameObject instance = Instantiate(gameMangagerPrefab);
+            GameObject instance = Instantiate(GameMenu);
             instance.GetComponent<NetworkObject>().Spawn();
         }
 

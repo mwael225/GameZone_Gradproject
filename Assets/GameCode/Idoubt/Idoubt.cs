@@ -7,7 +7,7 @@ public class Idoubt :CardGame
 {
 
     public string claim ="King";
-    List<GameObject> prev_play ;
+    public List<GameObject> prev_play ;
     GameObject origin;//it is an origin point for local position of cards/ local rotation of cards
     
     public Idoubt(InputHandler inputHandler) : base("Idoubt", 4, inputHandler)
@@ -109,7 +109,7 @@ public class Idoubt :CardGame
             if(prev_play[i].name.Split('-')[1]!=claim)
             {
                 islying = true;
-                piletohand(player-1%numberOfPlayers);
+                piletohand((player-1+numberOfPlayers)%numberOfPlayers);
 
             }
             else

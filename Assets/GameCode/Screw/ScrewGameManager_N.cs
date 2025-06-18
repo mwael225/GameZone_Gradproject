@@ -34,7 +34,7 @@ namespace GameSystem
             inputHandler.Keymap(keyCodes);
             screw = new Screw(inputHandler);
             currentTurn = firstplayer();
-            arrowdirection();
+            //arrowdirection();
             //screw.gameState = "start";
             screw.gameState = Screw.GameState.Start;
             StartCoroutine(screw.memorizecard());
@@ -226,7 +226,7 @@ namespace GameSystem
                     endgamecounter++;
                 }
                 currentTurn = (currentTurn + 1) % noOfPlayers;
-                arrowdirection();
+                //arrowdirection();
                 return currentTurn; 
             }
             return currentTurn;

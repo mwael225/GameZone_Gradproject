@@ -9,11 +9,9 @@ namespace GameSystem
     public class GameManager : NetworkBehaviour
     {
         protected int currentTurn;
-        Vector3 [] arrowpositions = {new Vector3(2.46f,6.94f,-0.05f),new Vector3(2.18f,6.94f,-0.05f),new Vector3(1.98f,6.94f,-0.15f),new Vector3(2.43f,6.94f,-0.64f)};
-        Vector3 [] arrowrotation = {new Vector3(0,230,0),new Vector3(0,138,0),new Vector3(0,43,0),new Vector3(0,-39,0)};
-
-        public GameObject arrow;
-        bool firsttime = true;
+        public Material on;
+        public Material off;
+        public List<GameObject> turns;
 
         public virtual void endGame()
         {
@@ -27,15 +25,19 @@ namespace GameSystem
         public virtual int firstplayer() { return 0; }
 
 
-        public void arrowdirection()
+        public void turnvisual()
         {
-            if(firsttime)
+            turns[currentTurn].GetComponent<MeshRenderer>().material = on;
+            for (int i = 0; i < turns.Count; i++)
             {
-                arrow = Instantiate(arrow);
-                firsttime = false;
+                if (i != currentTurn)
+                {
+                    turns[i].GetComponent<MeshRenderer>().material = off;
+                }
             }
-            arrow.transform.position = arrowpositions[currentTurn];
-            arrow.transform.rotation = Quaternion.Euler(arrowrotation[currentTurn]);
+        }
+        public void killGame()
+        {
         }
 
     }
