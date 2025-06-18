@@ -48,7 +48,7 @@ public class spawnplayers : NetworkBehaviour
         instance.GetComponent<NetworkObject>().SpawnWithOwnership(clientId);
         Debug.Log("Player"+clientId+" prefab instantiated and spawned.");
         }
-        if (NetworkManager.Singleton.ConnectedClients.Count==4&&NetworkManager.Singleton.IsServer)
+        if (NetworkManager.Singleton.ConnectedClients.Count==2&&NetworkManager.Singleton.IsServer)
         {
             GameObject instance = Instantiate(gameMangagerPrefab);
             instance.GetComponent<NetworkObject>().Spawn();

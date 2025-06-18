@@ -9,10 +9,6 @@ public class InputHandler : NetworkBehaviour
     private bool iamserver;
 
     public bool setupinputcalled = false;
-    /*public InputHandler(string x="someone kill me")
-    {
-        Debug.Log(x);
-    }*/
     public List<Dictionary<string, bool>> playerInput = new List<Dictionary<string, bool>>
     {
         new Dictionary<string, bool>{},
@@ -20,7 +16,7 @@ public class InputHandler : NetworkBehaviour
         new Dictionary<string, bool>{},
         new Dictionary<string, bool>{}
     };
-    //public List<KeyCode> keyCodes = new List<KeyCode>();
+
     public void Start()
     {
         Debug.Log("name " + transform.name + " isserver " + IsServer);
@@ -41,18 +37,18 @@ public class InputHandler : NetworkBehaviour
         }
     }
     /*public void setupinput(List<KeyCode> keyCodes)
+{
+    setupinputcalled = true;
+    Debug.Log("setup input called");
+    this.keyCodes = keyCodes;
+    for(int i=0;i<playerInput.Count;i++)
     {
-        setupinputcalled = true;
-        Debug.Log("setup input called");
-        this.keyCodes = keyCodes;
-        for(int i=0;i<playerInput.Count;i++)
+        for(int j=0;j<keyCodes.Count;j++) // Fixed syntax error in commented code
         {
-            for(int j=0;j<keyCodes.Count;j++) // Fixed syntax error in commented code
-            {
-                playerInput[i].Add(keyCodes[j].ToString(),false);
-            }
+            playerInput[i].Add(keyCodes[j].ToString(),false);
         }
-    }*/
+    }
+}*/
     public void Update()
     {
         if (IsOwner && IsClient)
@@ -98,7 +94,7 @@ public class InputHandler : NetworkBehaviour
             }
             else if (Input.GetKeyUp(KeyCode.Alpha1))
             {
-                InputGetkeyDownServerRpc(KeyCode.Alpha1, clientId); // Fixed typo from QAlpha2 to Alpha1
+                InputGetkeyDownServerRpc(KeyCode.Alpha1, clientId);
             }
             if (Input.GetKeyDown(KeyCode.Alpha2))
             {
@@ -124,7 +120,7 @@ public class InputHandler : NetworkBehaviour
             {
                 InputGetkeyDownServerRpc(KeyCode.Alpha4, clientId);
             }
-            // Added for Old Maid
+
             if (Input.GetKeyDown(KeyCode.M))
             {
                 InputGetkeyDownServerRpc(KeyCode.M, clientId, true);
@@ -157,13 +153,21 @@ public class InputHandler : NetworkBehaviour
             {
                 InputGetkeyDownServerRpc(KeyCode.LeftAlt, clientId);
             }
+            if (Input.GetKeyDown(KeyCode.RightAlt))
+            {
+                InputGetkeyDownServerRpc(KeyCode.RightAlt, clientId, true);
+            }
+            else if (Input.GetKeyUp(KeyCode.RightAlt))
+            {
+                InputGetkeyDownServerRpc(KeyCode.RightAlt, clientId);
+            }
             if (Input.GetKeyDown(KeyCode.Escape))
             {
                 InputGetkeyDownServerRpc(KeyCode.Escape, clientId, true);
             }
             else if (Input.GetKeyUp(KeyCode.Escape))
             {
-                InputGetkeyDownServerRpc(KeyCode.Escape, clientId); // Fixed typo from InputGetkeyUpServerRpc
+                InputGetkeyDownServerRpc(KeyCode.Escape, clientId);
             }
             if (Input.GetKeyDown(KeyCode.I))
             {
@@ -175,6 +179,7 @@ public class InputHandler : NetworkBehaviour
             }
         }
     }
+
     public void Keymap()
     {
         if (transform.name == "GameManager_N(Clone)" && IsServer)
@@ -196,22 +201,23 @@ public class InputHandler : NetworkBehaviour
             playerInput[i].Add(KeyCode.Alpha2.ToString(), false);
             playerInput[i].Add(KeyCode.Alpha3.ToString(), false);
             playerInput[i].Add(KeyCode.Alpha4.ToString(), false);
-            // Added key mappings for Old Maid
             playerInput[i].Add(KeyCode.M.ToString(), false);
             playerInput[i].Add(KeyCode.R.ToString(), false);
             playerInput[i].Add(KeyCode.S.ToString(), false);
             playerInput[i].Add(KeyCode.LeftAlt.ToString(), false);
+            playerInput[i].Add(KeyCode.RightAlt.ToString(), false); // Added RightAlt
             playerInput[i].Add(KeyCode.Escape.ToString(), false);
             playerInput[i].Add(KeyCode.I.ToString(), false);
         }
     }
+
     [ServerRpc]
     public void InputGetkeyDownServerRpc(KeyCode keyCode, ulong clientId, bool isPressed = false)
     {
         Debug.Log($"InputGetkeyDownServerRpc called for key {keyCode} by client {clientId}, isPressed: {isPressed}");
-        // Directly use 'this' instead of finding GameManager
         this.playerInput[(int)clientId][keyCode.ToString()] = isPressed;
     }
+
     public bool GetKeyDown(KeyCode keyCode, int clientId)
     {
         if (!IsServer && transform.name != "GameManager_N(Clone)")

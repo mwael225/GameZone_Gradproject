@@ -32,14 +32,17 @@ public class OldMaid : CardGame
     {
         cardSpacing = new List<Vector3>()
         {
-            new Vector3(-0.034975f, 0.001f, 0)*6,
-            new Vector3(0.001f, -0.034975f, 0)*6,
-            new Vector3(-0.034975f, 0.001f, 0)*6,
-            new Vector3(0.001f, -0.034975f, 0)*6,
+            new Vector3(-0.034975f, 0.001f, 0.005f)*6, // Player 0: Small Z-increment for visibility
+            new Vector3(0.001f, -0.034975f, 0)*6, // Player 1
+            new Vector3(-0.034975f, 0.001f, 0)*6, // Player 2
+            new Vector3(0.001f, -0.034975f, 0)*6, // Player 3
         };
         playerrotations = new List<Vector3>
         {
-            new Vector3(90, 0, 0), new Vector3(0, -90, -90), new Vector3(-90,0 ,180 ), new Vector3(0,90, 90)
+            new Vector3(0, 0, 0), // Player 0: No rotation
+            new Vector3(0, -90, -90), // Player 1
+            new Vector3(-90, 0, 180), // Player 2
+            new Vector3(0, 90, 90) // Player 3
         };
 
         handspostions = new List<List<Vector3>>()
@@ -161,7 +164,7 @@ public class OldMaid : CardGame
         hands[currentPlayer].Add(swappedCard);
 
         // Rotate the swapped card to match current player's hand orientation
-        swappedCard.transform.localRotation = Quaternion.Euler(playerrotations[currentPlayer]);
+        swappedCard.transform.localRotation = Quaternion.Euler(currentPlayer == 0 ? new Vector3(0, 0, 0) : playerrotations[currentPlayer]);
 
         Debug.Log("Player " + currentPlayer + " swapped a card from Player " + targetPlayer);
 
@@ -272,7 +275,7 @@ public class OldMaid : CardGame
     }
 
     // Method to select card from target player for swapping
-    public void SelectCardFromTargetPlayer(int currentPlayer)
+    public void SelectCardFromTargetPlayer(int currentPlayer, int cardIndex)
     {
         int targetPlayer = GetNextPlayerWithCards(currentPlayer);
 
@@ -284,13 +287,13 @@ public class OldMaid : CardGame
             return;
         }
 
-        if (navigatedCardindex >= hands[targetPlayer].Count)
+        if (cardIndex >= hands[targetPlayer].Count)
         {
-            navigatedCardindex = 0;
+            cardIndex = 0;
         }
 
         // Perform swap
-        SwapCardFromTarget(currentPlayer, targetPlayer, navigatedCardindex);
+        SwapCardFromTarget(currentPlayer, targetPlayer, cardIndex);
     }
 
     // Method to attempt merging selected cards
@@ -445,7 +448,7 @@ public class OldMaid : CardGame
         for (int j = 0; j < hands[player].Count; j++)
         {
             hands[player][j].transform.localPosition = handspostions[player][j];
-            hands[player][j].transform.localRotation = Quaternion.Euler(playerrotations[player]);
+            hands[player][j].transform.localRotation = Quaternion.Euler(player == 0 ? new Vector3(0, 0, 0) : playerrotations[player]);
         }
     }
 
@@ -509,5 +512,54 @@ public class OldMaid : CardGame
             navigatedCard.transform.localScale = oldscale * 1.2f;
             navigatedCard.GetComponent<Renderer>().material.color = Color.cyan;
         }
+    }
+
+    // Method for AI to select a random card to swap
+    public int AISelectRandomCard(int targetPlayer)
+    {
+        if (hands[targetPlayer].Count == 0)
+        {
+            return -1;
+        }
+        System.Random rand = new System.Random();
+        return rand.Next(0, hands[targetPlayer].Count);
+    }
+
+    // Method for AI to select all mergeable card pairs
+    public List<List<int>> AISelectCardsToMerge(int player)
+    {
+        List<List<int>> mergeablePairs = new List<List<int>>();
+        Dictionary<string, List<int>> valueToIndices = new Dictionary<string, List<int>>();
+
+        // Group cards by value
+        for (int i = 0; i < hands[player].Count; i++)
+        {
+            string value = GetCardValue(hands[player][i]);
+            if (value != "King")
+            {
+                if (!valueToIndices.ContainsKey(value))
+                {
+                    valueToIndices[value] = new List<int>();
+                }
+                valueToIndices[value].Add(i);
+            }
+        }
+
+        // Collect all pairs of cards with the same value
+        foreach (var pair in valueToIndices)
+        {
+            if (pair.Value.Count >= 2)
+            {
+                for (int i = 0; i < pair.Value.Count - 1; i += 2)
+                {
+                    if (i + 1 < pair.Value.Count)
+                    {
+                        mergeablePairs.Add(new List<int> { pair.Value[i], pair.Value[i + 1] });
+                    }
+                }
+            }
+        }
+
+        return mergeablePairs;
     }
 }
