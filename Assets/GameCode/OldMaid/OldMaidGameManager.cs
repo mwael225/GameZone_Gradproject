@@ -1,3 +1,4 @@
+//This is the Monobehaviour file of the OldMaid, it is used for initializing the game, handles player turns (human and AI), processes input for card navigation, selection, swapping, and merging, updates the game state display, and coordinates game flow using the OldMaid class.
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
@@ -6,14 +7,13 @@ using GameSystem;
 public class OldMaidGameManager : MonoBehaviour
 {
     OldMaid oldmaid;
-    private int navigatedCardIndexTarget = 0; // Index for target player's hand navigation
-    [SerializeField] private Camera player0Camera; // Reference to Player 0's camera
+    private int navigatedCardIndexTarget = 0; 
+    [SerializeField] private Camera player0Camera;
+    private string gameStateText;
 
     public void Start()
     {
         oldmaid = new OldMaid();
-
-        // Explicitly find and assign Player0Camera
         GameObject camObj = GameObject.Find("Player0Camera");
         if (camObj != null)
         {
@@ -24,8 +24,6 @@ public class OldMaidGameManager : MonoBehaviour
             Debug.LogError("Could not find Player0Camera in the scene! Please ensure it exists.");
             return;
         }
-
-        // Disable any other cameras to prevent conflicts
         for (int i = 1; i < 4; i++)
         {
             GameObject otherCamObj = GameObject.Find("Player" + i + "Camera");
@@ -44,7 +42,47 @@ public class OldMaidGameManager : MonoBehaviour
         Debug.Log("Using camera: " + player0Camera.gameObject.name + " for Player 0");
 
         Debug.Log("Old Maid game started. Player 0's turn. Navigate target player's cards with Q/W, select with S.");
+        UpdateGameStateText();
         StartPlayerTurn(0);
+    }
+
+    private void UpdateGameStateText()
+    {
+        if (oldmaid.gamestate == "end")
+        {
+            List<int> finishOrder = oldmaid.GetFinishOrder();
+            string rankingText = "Game Over!\n";
+            for (int i = 0; i < finishOrder.Count; i++)
+            {
+                int place = i + 1;
+                string suffix = place == 1 ? "st" : place == 2 ? "nd" : place == 3 ? "rd" : "th";
+                rankingText += $"{place}{suffix} Place: Player {finishOrder[i] + 1}\n";
+            }
+            int lastPlayer = finishOrder[finishOrder.Count - 1];
+            if (oldmaid.hands[lastPlayer].Count == 1 && oldmaid.HasKingCard(lastPlayer))
+            {
+                rankingText += $"Player {lastPlayer + 1} Lost with the Old Maid!";
+            }
+            gameStateText = rankingText;
+        }
+        else
+        {
+            string stateText = $"Player {oldmaid.cplayer + 1}'s Turn\n";
+            stateText += oldmaid.gamestate == "swapping" ? "Swapping Phase" : "Merging Phase";
+            gameStateText = stateText;
+        }
+    }
+
+    private void OnGUI()
+    {
+        GUIStyle style = new GUIStyle();
+        style.fontSize = 16;
+        style.normal.textColor = Color.white;
+        style.alignment = TextAnchor.UpperRight;
+        float x = Screen.width - 10;
+        float y = 10;
+        Rect labelRect = new Rect(0, y, Screen.width - 20, 100);
+        GUI.Label(labelRect, gameStateText, style);
     }
 
     private void StartPlayerTurn(int player)
@@ -52,6 +90,7 @@ public class OldMaidGameManager : MonoBehaviour
         if (oldmaid.gamestate == "end") return;
 
         Debug.Log("=== Player " + player + "'s turn ===");
+        UpdateGameStateText(); // Update text for new turn
         if (player == 0)
         {
             int targetPlayer = oldmaid.GetNextPlayerWithCards(player);
@@ -63,52 +102,67 @@ public class OldMaidGameManager : MonoBehaviour
             {
                 Debug.Log("No other players have cards! Moving to merging phase.");
                 oldmaid.gamestate = "merging";
+                UpdateGameStateText(); // Update text for phase change
             }
         }
         else
         {
-            // AI player's turn
             StartCoroutine(AIPlayTurn(player));
         }
     }
 
     private IEnumerator AIPlayTurn(int player)
     {
-        // Simulate thinking time
-        yield return new WaitForSeconds(Random.Range(0.5f, 1.5f));
-
-        // Swapping phase
+        yield return new WaitForSeconds(Random.Range(0.5f, 2.0f));
+        if (Random.Range(0f, 1f) < (oldmaid.HasKingCard(player) ? 0.7f : 0.3f))
+        {
+            Debug.Log("AI Player " + player + " is shuffling their cards...");
+            oldmaid.ShufflePlayerHand(player);
+            UpdateGameStateText();
+            yield return new WaitForSeconds(Random.Range(0.5f, 1.5f));
+        }
         if (oldmaid.gamestate == "swapping")
         {
             int targetPlayer = oldmaid.GetNextPlayerWithCards(player);
             if (targetPlayer != -1)
             {
+                int hesitationSteps = Random.Range(1, 4);
+                for (int i = 0; i < hesitationSteps; i++)
+                {
+                    int tempIndex = Random.Range(0, oldmaid.hands[targetPlayer].Count);
+                    oldmaid.HighlightTargetPlayerCard(targetPlayer, tempIndex);
+                    yield return new WaitForSeconds(Random.Range(0.2f, 0.5f));
+                }
+
                 int cardIndex = oldmaid.AISelectRandomCard(targetPlayer);
                 if (cardIndex != -1)
                 {
                     Debug.Log("AI Player " + player + " is swapping a card from Player " + targetPlayer);
                     oldmaid.HighlightTargetPlayerCard(targetPlayer, cardIndex);
-                    yield return new WaitForSeconds(0.5f); // Brief highlight
+                    yield return new WaitForSeconds(Random.Range(0.5f, 1.0f));
                     oldmaid.SelectCardFromTargetPlayer(player, cardIndex);
+                    UpdateGameStateText();
                 }
                 else
                 {
                     Debug.Log("AI Player " + player + ": No cards to swap from target. Moving to merging.");
                     oldmaid.gamestate = "merging";
+                    UpdateGameStateText();
                 }
             }
             else
             {
                 Debug.Log("AI Player " + player + ": No other players have cards. Moving to merging.");
                 oldmaid.gamestate = "merging";
+                UpdateGameStateText();
             }
         }
 
         // Merging phase
         if (oldmaid.gamestate == "merging")
         {
-            yield return new WaitForSeconds(Random.Range(0.5f, 1.5f)); // Simulate thinking
-            int maxMerges = oldmaid.hands[player].Count / 2; // Limit merges to avoid infinite loops
+            yield return new WaitForSeconds(Random.Range(0.5f, 1.5f));
+            int maxMerges = oldmaid.hands[player].Count / 2;
             int mergeCount = 0;
 
             while (mergeCount < maxMerges)
@@ -116,19 +170,24 @@ public class OldMaidGameManager : MonoBehaviour
                 List<List<int>> mergeablePairs = oldmaid.AISelectCardsToMerge(player);
                 if (mergeablePairs.Count > 0)
                 {
-                    var pair = mergeablePairs[0]; // Take the first pair
+                    int pairIndex = Random.Range(0, mergeablePairs.Count);
+                    var pair = mergeablePairs[pairIndex];
+
                     Debug.Log("AI Player " + player + " is merging cards at indices: " + pair[0] + ", " + pair[1]);
                     oldmaid.selectedCardsindex = new List<int>(pair);
                     foreach (int index in pair)
                     {
-                        if (index < oldmaid.hands[player].Count) // Safety check
+                        if (index < oldmaid.hands[player].Count)
                         {
                             oldmaid.hands[player][index].GetComponent<Renderer>().material.color = Color.yellow;
+                            yield return new WaitForSeconds(Random.Range(0.2f, 0.5f));
                         }
                     }
-                    yield return new WaitForSeconds(0.5f); // Show selection
+
+                    yield return new WaitForSeconds(Random.Range(0.5f, 1.0f));
                     oldmaid.AttemptMerge(player);
-                    yield return new WaitForSeconds(0.5f); // Brief pause between merges
+                    UpdateGameStateText();
+                    yield return new WaitForSeconds(Random.Range(0.5f, 1.0f)); // Brief pause between merges
                     mergeCount++;
                 }
                 else
@@ -139,8 +198,8 @@ public class OldMaidGameManager : MonoBehaviour
             }
         }
 
-        // End AI turn
-        yield return new WaitForSeconds(0.5f);
+        // End AI turn with some delay
+        yield return new WaitForSeconds(Random.Range(0.5f, 1.5f));
         Debug.Log("AI Player " + player + " ending turn");
         oldmaid.EndTurn();
         StartPlayerTurn(oldmaid.cplayer);
@@ -152,7 +211,6 @@ public class OldMaidGameManager : MonoBehaviour
         {
             if (oldmaid.cplayer == 0)
             {
-                // Human player input
                 if (oldmaid.gamestate == "swapping")
                 {
                     HandleSwappingNavigation();
@@ -165,55 +223,48 @@ public class OldMaidGameManager : MonoBehaviour
                 }
                 HandleShuffleInput();
             }
-            // AI players are handled via coroutines
         }
     }
 
     private void HandleMergingInput()
     {
-        // Use Space key or Enter key to select/deselect cards for merging
         if (Input.GetKeyDown(KeyCode.Space) || Input.GetKeyDown(KeyCode.Return))
         {
             if (oldmaid.hands[0].Count > 0 && oldmaid.navigatedCardindex < oldmaid.hands[0].Count)
             {
                 oldmaid.SelectCard(0, oldmaid.navigatedCardindex);
+                UpdateGameStateText();
             }
             else
             {
                 Debug.Log("No cards to select or invalid navigation index!");
             }
         }
-
-        // Use M key to attempt merging selected cards
         if (Input.GetKeyDown(KeyCode.M))
         {
             oldmaid.AttemptMerge(0);
+            UpdateGameStateText();
         }
-
-        // Use Alt key to end turn
         if (Input.GetKeyDown(KeyCode.LeftAlt) || Input.GetKeyDown(KeyCode.RightAlt))
         {
             Debug.Log("Player 0 ending turn");
             oldmaid.EndTurn();
             StartPlayerTurn(oldmaid.cplayer);
         }
-
-        // Optional: Use Escape key to clear all selections
         if (Input.GetKeyDown(KeyCode.Escape))
         {
             ClearAllSelections();
+            UpdateGameStateText();
         }
     }
 
     private void HandleSwappingInput()
     {
-        // Use S key to swap card from target player
         if (Input.GetKeyDown(KeyCode.S))
         {
             SelectCardFromTargetPlayer();
+            UpdateGameStateText(); 
         }
-
-        // Optional: Display game info
         if (Input.GetKeyDown(KeyCode.I))
         {
             DisplayGameInfo();
@@ -222,10 +273,10 @@ public class OldMaidGameManager : MonoBehaviour
 
     private void HandleShuffleInput()
     {
-        // Use R key to shuffle current player's hand
         if (Input.GetKeyDown(KeyCode.R))
         {
             oldmaid.ShufflePlayerHand(0);
+            UpdateGameStateText();
         }
     }
 
@@ -238,6 +289,7 @@ public class OldMaidGameManager : MonoBehaviour
             Debug.Log("No other players have cards! Moving to merging phase.");
             oldmaid.gamestate = "merging";
             oldmaid.areLeftPlayerCardsDisplayed = false;
+            UpdateGameStateText();
             return;
         }
 
@@ -252,7 +304,7 @@ public class OldMaidGameManager : MonoBehaviour
 
     private void HandleSwappingNavigation()
     {
-        if (oldmaid.gamestate != "swapping") return; // Skip if not in swapping phase
+        if (oldmaid.gamestate != "swapping") return;
 
         int targetPlayer = oldmaid.GetNextPlayerWithCards(0);
 
@@ -261,10 +313,9 @@ public class OldMaidGameManager : MonoBehaviour
             Debug.Log("No other players have cards! Moving to merging phase.");
             oldmaid.gamestate = "merging";
             oldmaid.areLeftPlayerCardsDisplayed = false;
+            UpdateGameStateText();
             return;
         }
-
-        // Handle navigation with Q/W
         bool navigationChanged = false;
         if (Input.GetKeyDown(KeyCode.Q))
         {
@@ -281,6 +332,7 @@ public class OldMaidGameManager : MonoBehaviour
         {
             oldmaid.navigatedCardindex = navigatedCardIndexTarget;
             oldmaid.HighlightTargetPlayerCard(targetPlayer, navigatedCardIndexTarget);
+            UpdateGameStateText();
         }
     }
 

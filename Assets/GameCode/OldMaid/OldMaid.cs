@@ -1,3 +1,4 @@
+//This file defines the core logic for the Old Maid card game in Unity. It handles game setup, card dealing, shuffling, player hand management, card swapping, merging pairs, tracking game state, and determining win/loss conditions, including AI behavior for non-human players.
 using UnityEngine;
 using System.Collections;
 using System.Collections.Generic;
@@ -6,9 +7,10 @@ using GameSystem;
 public class OldMaid : CardGame
 {
     string prefabpath = "Prefabs/Card_Deck_Shayeb";
-    private List<Vector3> originalCardPositions; // Store original positions of left player's cards
-    private List<Quaternion> originalCardRotations; // Store original rotations of left player's cards
-    public bool areLeftPlayerCardsDisplayed; // Flag to track if left player's cards are displayed
+    private List<Vector3> originalCardPositions;
+    private List<Quaternion> originalCardRotations;
+    public bool areLeftPlayerCardsDisplayed;
+    private List<int> finishOrder;
 
     public OldMaid() : base("Old Maid", 4)
     {
@@ -21,33 +23,39 @@ public class OldMaid : CardGame
         selectedCardsindex = new List<int>();
         centralpileLocalpos = new List<Vector3> { new Vector3(0, 0, 0) };
         discard_pilespcaing = new List<Vector3> { new Vector3(0, 0, 0.005f) };
-        gamestate = "swapping"; // Start with swapping phase
-        cplayer = 0; // Start with player 0
+        gamestate = "swapping";
+        cplayer = 0;
         originalCardPositions = new List<Vector3>();
         originalCardRotations = new List<Quaternion>();
         areLeftPlayerCardsDisplayed = false;
+        finishOrder = new List<int>();
+    }
+
+    public List<int> GetFinishOrder()
+    {
+        return new List<int>(finishOrder);
     }
 
     public override void setupposition()
     {
         cardSpacing = new List<Vector3>()
         {
-            new Vector3(-0.034975f, 0.001f, 0.005f)*6, // Player 0: Small Z-increment for visibility
-            new Vector3(0.001f, -0.034975f, 0)*6, // Player 1
-            new Vector3(-0.034975f, 0.001f, 0)*6, // Player 2
-            new Vector3(0.001f, -0.034975f, 0)*6, // Player 3
+            new Vector3(-0.034975f, 0f, 0.01f)*6,
+            new Vector3(0.001f, -0.034975f, 0)*6,
+            new Vector3(-0.034975f, 0.001f, 0)*6,
+            new Vector3(0.001f, -0.034975f, 0)*6,
         };
         playerrotations = new List<Vector3>
         {
-            new Vector3(0, 0, 0), // Player 0: No rotation
-            new Vector3(0, -90, -90), // Player 1
-            new Vector3(-90, 0, 180), // Player 2
-            new Vector3(0, 90, 90) // Player 3
+            new Vector3(0, 0, 0),
+            new Vector3(0, -90, -90), 
+            new Vector3(-90, 0, 180),
+            new Vector3(0, 90, 90)
         };
 
         handspostions = new List<List<Vector3>>()
         {
-            new List<Vector3> { new Vector3(0.25f, -0.49f, 0.3f)*5 },
+            new List<Vector3> { new Vector3(0.25f, -0.32f, 0.3f)*5 },
             new List<Vector3> { new Vector3(-0.612f, 0.231f, 0.3f)*5 },
             new List<Vector3> { new Vector3(0.25f, 0.49f, 0.3f)*5 },
             new List<Vector3> { new Vector3(0.612f, 0.231f, 0.3f)*5},
@@ -56,12 +64,18 @@ public class OldMaid : CardGame
         {
             for (int j = 0; j < hands[i].Count; j++)
             {
-                handspostions[i].Add(handspostions[i][handspostions[i].Count - 1] + cardSpacing[i]);
+                if (i == 0)
+                {
+                    Vector3 lastPos = handspostions[i][handspostions[i].Count - 1];
+                    handspostions[i].Add(new Vector3(lastPos.x + cardSpacing[i].x, lastPos.y, lastPos.z + 0.01f));
+                }
+                else
+                {
+                    handspostions[i].Add(handspostions[i][handspostions[i].Count - 1] + cardSpacing[i]);
+                }
             }
         }
     }
-
-    // Method to shuffle a player's hand
     public void ShufflePlayerHand(int player)
     {
         if (player != cplayer)
@@ -75,14 +89,8 @@ public class OldMaid : CardGame
             Debug.Log("Not enough cards to shuffle!");
             return;
         }
-
-        // Clear any current selections before shuffling
         ClearSelection(player);
-
-        // Create a copy of the current hand to shuffle
         List<GameObject> shuffledHand = new List<GameObject>(hands[player]);
-
-        // Fisher-Yates shuffle algorithm
         System.Random rand = new System.Random();
         for (int i = shuffledHand.Count - 1; i > 0; i--)
         {
@@ -91,20 +99,12 @@ public class OldMaid : CardGame
             shuffledHand[i] = shuffledHand[randomIndex];
             shuffledHand[randomIndex] = temp;
         }
-
-        // Replace the player's hand with the shuffled version
         hands[player] = shuffledHand;
-
-        // Reset navigation index to 0 after shuffle
         navigatedCardindex = 0;
-
-        // Update positions for the shuffled cards
         UpdateHandPositions(player);
 
         Debug.Log("Player " + player + " shuffled their hand! Cards have been reorganized.");
     }
-
-    // Method to get the next player to the left who has cards
     public int GetNextPlayerWithCards(int currentPlayer)
     {
         int nextPlayer = currentPlayer;
@@ -114,16 +114,12 @@ public class OldMaid : CardGame
         {
             nextPlayer = (nextPlayer - 1 + numberOfPlayers) % numberOfPlayers;
             attempts++;
-
-            // If we've checked all players and none have cards, return -1
             if (attempts >= numberOfPlayers)
             {
                 return -1;
             }
         }
         while (hands[nextPlayer].Count == 0 && nextPlayer != currentPlayer);
-
-        // If we looped back to current player, no one else has cards
         if (nextPlayer == currentPlayer)
         {
             return -1;
@@ -131,14 +127,10 @@ public class OldMaid : CardGame
 
         return nextPlayer;
     }
-
-    // Method to get the player to the left (previous player in turn order) - kept for compatibility
     public int GetLeftPlayer(int currentPlayer)
     {
         return (currentPlayer - 1 + numberOfPlayers) % numberOfPlayers;
     }
-
-    // Method to swap a card from the target player
     public void SwapCardFromTarget(int currentPlayer, int targetPlayer, int targetCardIndex)
     {
         if (hands[targetPlayer].Count == 0)
@@ -155,62 +147,39 @@ public class OldMaid : CardGame
             areLeftPlayerCardsDisplayed = false;
             return;
         }
-
-        // Take the card from target player
         GameObject swappedCard = hands[targetPlayer][targetCardIndex];
         hands[targetPlayer].RemoveAt(targetCardIndex);
-
-        // Add to current player's hand
         hands[currentPlayer].Add(swappedCard);
-
-        // Rotate the swapped card to match current player's hand orientation
         swappedCard.transform.localRotation = Quaternion.Euler(currentPlayer == 0 ? new Vector3(0, 0, 0) : playerrotations[currentPlayer]);
-
         Debug.Log("Player " + currentPlayer + " swapped a card from Player " + targetPlayer);
-
         areLeftPlayerCardsDisplayed = false;
-
-        // Update positions for both players
         UpdateHandPositions(targetPlayer);
         UpdateHandPositions(currentPlayer);
-
-        // Reset navigation to the new card
         navigatedCardindex = hands[currentPlayer].Count - 1;
-
-        // Change game state to merging after swap
         gamestate = "merging";
 
         Debug.Log("Player " + currentPlayer + " can now merge cards. Press M to merge selected cards, Alt to end turn.");
     }
-
-    // Method to end current player's turn
     public void EndTurn()
     {
-        // Clear any selections
         selectedCardsindex.Clear();
-
-        // Move to next player
         do
         {
             cplayer = (cplayer + 1) % numberOfPlayers;
         } while (hands[cplayer].Count == 0 && !IsGameOver());
-
-        // Reset navigation
         navigatedCardindex = 0;
         if (hands[cplayer].Count > 0)
         {
             navigatedCardindex = hands[cplayer].Count > navigatedCardindex ? navigatedCardindex : hands[cplayer].Count - 1;
         }
-
-        // Set game state for next player
         if (IsGameOver())
         {
             gamestate = "end";
         }
         else
         {
-            gamestate = "swapping"; // Start with swapping phase
-            areLeftPlayerCardsDisplayed = false; // Reset display flag for new turn
+            gamestate = "swapping";
+            areLeftPlayerCardsDisplayed = false;
             Debug.Log("=== Player " + cplayer + "'s turn ===");
 
             int targetPlayer = GetNextPlayerWithCards(cplayer);
@@ -225,8 +194,6 @@ public class OldMaid : CardGame
             }
         }
     }
-
-    // Method to check if game is over
     private bool IsGameOver()
     {
         int playersWithCards = 0;
@@ -236,8 +203,6 @@ public class OldMaid : CardGame
         }
         return playersWithCards <= 1;
     }
-
-    // Method to select/deselect a card
     public void SelectCard(int player, int cardIndex)
     {
         if (gamestate != "merging")
@@ -254,31 +219,25 @@ public class OldMaid : CardGame
 
         if (selectedCardsindex.Contains(cardIndex))
         {
-            // Deselect the card
             selectedCardsindex.Remove(cardIndex);
             hands[player][cardIndex].GetComponent<Renderer>().material.color = Color.white;
             Debug.Log("Card deselected at index: " + cardIndex);
         }
         else
         {
-            // Only allow selecting up to 2 cards
             if (selectedCardsindex.Count >= 2)
             {
                 Debug.Log("Cannot select more than 2 cards!");
                 return;
             }
-            // Select the card
             selectedCardsindex.Add(cardIndex);
             hands[player][cardIndex].GetComponent<Renderer>().material.color = Color.yellow;
             Debug.Log("Card selected at index: " + cardIndex);
         }
     }
-
-    // Method to select card from target player for swapping
     public void SelectCardFromTargetPlayer(int currentPlayer, int cardIndex)
     {
         int targetPlayer = GetNextPlayerWithCards(currentPlayer);
-
         if (targetPlayer == -1)
         {
             Debug.Log("No other players have cards! Moving to merging phase.");
@@ -291,12 +250,8 @@ public class OldMaid : CardGame
         {
             cardIndex = 0;
         }
-
-        // Perform swap
         SwapCardFromTarget(currentPlayer, targetPlayer, cardIndex);
     }
-
-    // Method to attempt merging selected cards
     public void AttemptMerge(int player)
     {
         if (gamestate != "merging")
@@ -345,8 +300,6 @@ public class OldMaid : CardGame
             ClearSelection(player);
         }
     }
-
-    // Method to merge two selected cards
     private void MergeCards(int player, int firstIndex, int secondIndex)
     {
         List<int> indicesToRemove = new List<int> { firstIndex, secondIndex };
@@ -368,8 +321,6 @@ public class OldMaid : CardGame
         Debug.Log("Cards merged successfully. Player " + player + " now has " + hands[player].Count + " cards.");
         CheckWinCondition(player);
     }
-
-    // Method to clear current selection
     private void ClearSelection(int player)
     {
         foreach (int index in selectedCardsindex)
@@ -381,8 +332,6 @@ public class OldMaid : CardGame
         }
         selectedCardsindex.Clear();
     }
-
-    // Method to extract card value from GameObject name
     private string GetCardValue(GameObject card)
     {
         string cardName = card.name;
@@ -433,16 +382,25 @@ public class OldMaid : CardGame
         Debug.LogError("Could not extract card value from: " + cardName + ". Expected format: Card_[Suit][Value]");
         return cardName;
     }
-
-    // Method to update hand positions after card removal
     private void UpdateHandPositions(int player)
     {
         handspostions[player].Clear();
-        handspostions[player].Add(GetBasePosition(player));
-
-        for (int j = 1; j < hands[player].Count; j++)
+        if (player == 0) 
         {
-            handspostions[player].Add(handspostions[player][j - 1] + cardSpacing[player]);
+            handspostions[player].Add(new Vector3(0.25f * 5, -0.32f * 5, 0.3f * 5)); 
+            for (int j = 1; j < hands[player].Count; j++)
+            {
+                Vector3 lastPos = handspostions[player][j - 1];
+                handspostions[player].Add(new Vector3(lastPos.x + cardSpacing[player].x, lastPos.y, lastPos.z + 0.01f));
+            }
+        }
+        else
+        {
+            handspostions[player].Add(GetBasePosition(player));
+            for (int j = 1; j < hands[player].Count; j++)
+            {
+                handspostions[player].Add(handspostions[player][j - 1] + cardSpacing[player]);
+            }
         }
 
         for (int j = 0; j < hands[player].Count; j++)
@@ -451,8 +409,6 @@ public class OldMaid : CardGame
             hands[player][j].transform.localRotation = Quaternion.Euler(player == 0 ? new Vector3(0, 0, 0) : playerrotations[player]);
         }
     }
-
-    // Helper method to get base position for each player
     private Vector3 GetBasePosition(int player)
     {
         Vector3[] basePositions = {
@@ -463,16 +419,19 @@ public class OldMaid : CardGame
         };
         return basePositions[player];
     }
-
-    // Method to check win condition
     private void CheckWinCondition(int player)
     {
-        if (hands[player].Count == 0)
+        if (hands[player].Count == 0 && !finishOrder.Contains(player))
         {
+            finishOrder.Add(player);
             Debug.Log("Player " + player + " has no cards left!");
         }
         else if (hands[player].Count == 1 && GetCardValue(hands[player][0]) == "King")
         {
+            if (!finishOrder.Contains(player))
+            {
+                finishOrder.Add(player);
+            }
             Debug.Log("Player " + player + " loses! They have the Old Maid (King)!");
             gamestate = "end";
         }
@@ -488,24 +447,20 @@ public class OldMaid : CardGame
             }
         }
 
-        if (playersWithCards == 1)
+        if (playersWithCards == 1 && !finishOrder.Contains(lastPlayerWithCards))
         {
+            finishOrder.Add(lastPlayerWithCards);
             Debug.Log("Game Over! Player " + lastPlayerWithCards + " loses with the Old Maid!");
             gamestate = "end";
         }
     }
-
-    // Method to highlight a specific card in target player's hand during navigation
     public void HighlightTargetPlayerCard(int targetPlayer, int cardIndex)
     {
-        // Reset all target player's cards to normal appearance
         for (int i = 0; i < hands[targetPlayer].Count; i++)
         {
             hands[targetPlayer][i].transform.localScale = oldscale;
             hands[targetPlayer][i].GetComponent<Renderer>().material.color = Color.white;
         }
-
-        // Highlight the navigated card
         if (cardIndex >= 0 && cardIndex < hands[targetPlayer].Count)
         {
             GameObject navigatedCard = hands[targetPlayer][cardIndex];
@@ -514,7 +469,6 @@ public class OldMaid : CardGame
         }
     }
 
-    // Method for AI to select a random card to swap
     public int AISelectRandomCard(int targetPlayer)
     {
         if (hands[targetPlayer].Count == 0)
@@ -522,16 +476,24 @@ public class OldMaid : CardGame
             return -1;
         }
         System.Random rand = new System.Random();
-        return rand.Next(0, hands[targetPlayer].Count);
+        int navigationSteps = rand.Next(1, 4);
+        int currentIndex = navigatedCardindex;
+
+        for (int i = 0; i < navigationSteps; i++)
+        {
+            bool forward = rand.Next(0, 2) == 0;
+            currentIndex = forward ?
+                (currentIndex + 1) % hands[targetPlayer].Count :
+                (currentIndex - 1 + hands[targetPlayer].Count) % hands[targetPlayer].Count;
+        }
+
+        return currentIndex;
     }
 
-    // Method for AI to select all mergeable card pairs
     public List<List<int>> AISelectCardsToMerge(int player)
     {
         List<List<int>> mergeablePairs = new List<List<int>>();
         Dictionary<string, List<int>> valueToIndices = new Dictionary<string, List<int>>();
-
-        // Group cards by value
         for (int i = 0; i < hands[player].Count; i++)
         {
             string value = GetCardValue(hands[player][i]);
@@ -544,8 +506,6 @@ public class OldMaid : CardGame
                 valueToIndices[value].Add(i);
             }
         }
-
-        // Collect all pairs of cards with the same value
         foreach (var pair in valueToIndices)
         {
             if (pair.Value.Count >= 2)
@@ -561,5 +521,16 @@ public class OldMaid : CardGame
         }
 
         return mergeablePairs;
+    }
+    public bool HasKingCard(int player)
+    {
+        foreach (GameObject card in hands[player])
+        {
+            if (GetCardValue(card) == "King")
+            {
+                return true;
+            }
+        }
+        return false;
     }
 }
