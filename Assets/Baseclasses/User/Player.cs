@@ -1,31 +1,50 @@
-using System;
-using System.Collections.Generic;
-using Firebase;
-using Firebase.Auth;
-using Firebase.Database;
 using UnityEngine;
+using System.IO;
+using TMPro;
 
-    public class Player :MonoBehaviour
+public class Player : MonoBehaviour
+{
+    public TMP_InputField inputField;  // Assign this in the inspector
+
+    private string documentsPath;
+    private string gameZonePath;
+    private string playerDataPath;
+    public GameObject panel;
+
+    void Start()
     {
-        private List<string> friends;
-        private List<string> friendRequests;
-        FirebaseAuth auth;
-        public void Start()
-        {
-            InitializeFirebase();
-        }
-        public void Update()
-        {
-            // Update logic here
-        }
-        void InitializeFirebase()
-        {
-            
+        documentsPath = System.Environment.GetFolderPath(System.Environment.SpecialFolder.MyDocuments);
+        gameZonePath = Path.Combine(documentsPath, "GameZone");
+        playerDataPath = Path.Combine(gameZonePath, "playerdata");
 
-        }
-        public void authenticate(string email, string password)
+        if (!Directory.Exists(gameZonePath))
         {
-            
+            Directory.CreateDirectory(gameZonePath);
+            Debug.Log("'GameZone' folder created.");
         }
 
+        if (File.Exists(playerDataPath))
+        {
+            string content = File.ReadAllText(playerDataPath);
+            Debug.Log("Contents of 'playerdata':" + content);
+        }
+        else
+        {
+            panel.SetActive(true);
+        }
     }
+
+    public void SavePlayerData()
+    {
+        if (inputField == null)
+        {
+            Debug.LogError("InputField is not assigned.");
+            return;
+        }
+
+        string userInput = inputField.text;
+        File.WriteAllText(playerDataPath, userInput);
+        Debug.Log("'playerdata' has been saved with new content.");
+        panel.SetActive(false);
+    }
+}

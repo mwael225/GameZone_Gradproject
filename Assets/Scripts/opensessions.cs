@@ -91,7 +91,7 @@ public class opensessions : MonoBehaviour
     }
     void OnButtonClick(Lobby lobby)
     {
-
+        
     }
     void entergame()
     {

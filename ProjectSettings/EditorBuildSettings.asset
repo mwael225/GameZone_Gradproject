@@ -11,5 +11,8 @@ EditorBuildSettings:
   - enabled: 1
     path: Assets/Scenes/room.unity
     guid: 6f2f953e0224129468cbdabc11f4677d
+  - enabled: 1
+    path: Assets/Scenes/MainMenuBasic.unity
+    guid: 2fb6638e826a5eb468f7f9f2ddcb926d
   m_configObjects: {}
   m_UseUCBPForAssetBundles: 0
