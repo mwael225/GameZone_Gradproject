@@ -4,16 +4,18 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine.Android;
 using Unity.VisualScripting;
+using Unity.Netcode;
 namespace GameSystem    
 {
-    public class ScrewGameManager:GameManager
+    public class ScrewGameManager : GameManager
     {
         Screw screw;
-        int actionnumber=-1;
+        int actionnumber = -1;
         bool click = false;
         bool screwdeclared = false;
-        int endgamecounter,framecount = 0;
+        int endgamecounter, framecount = 0;
         InputHandler inputHandler;
+        GameObject gameMenu;
         List<KeyCode> keyCodes = new List<KeyCode>
         {
             KeyCode.Alpha1,
@@ -24,12 +26,13 @@ namespace GameSystem
             KeyCode.W,
             KeyCode.A,
             KeyCode.D,
-            KeyCode.Return
+            KeyCode.Return,
+            KeyCode.Alpha9
         };
         GameObject card1, card2;
         public void Start()
         {
-            if(!IsServer)return;
+            if (!IsServer) return;
             inputHandler = GetComponent<InputHandler>();
             inputHandler.Keymap(keyCodes);
             screw = new Screw(inputHandler);
@@ -38,32 +41,41 @@ namespace GameSystem
             //screw.gameState = "start";
             screw.gameState = Screw.GameState.Start;
             StartCoroutine(screw.memorizecard());
+            gameMenu = GameObject.Find("GameMenu(Clone)");
+            gameMenu.SetActive(false);
+
+
         }
         bool x = false;
         public void Update()
         {
-            
-            if (!IsServer) return;  
+            if (!IsServer) return;
 
+            if (inputHandler.GetKeyDown(KeyCode.Alpha9, 0))
+            {
+                StopAllCoroutines();
+                killGame();
+                return;
+            }
             if (screw.gameState == Screw.GameState.End)
             {
                 Debug.Log("game ended");
                 return;
             }
-            if(endgamecounter==4)
-                {
-                    screw.gameState = Screw.GameState.End;
-                    screw.scoresheet();
-                }
+            if (endgamecounter == 4)
+            {
+                screw.gameState = Screw.GameState.End;
+                screw.scoresheet();
+            }
 
             currentTurn = NextTurn(screw.numberOfPlayers);
             framecount++;
-            if(framecount%120==0)
+            if (framecount % 120 == 0)
             {
-                framecount =0;
-                Debug.Log(screw.gameState); 
+                framecount = 0;
+                Debug.Log(screw.gameState);
             }
-            if (screw.gameState != Screw.GameState.Seeothercard && screw.gameState != Screw.GameState.Choosing2&&screw.gameState!=Screw.GameState.Lookaround)
+            if (screw.gameState != Screw.GameState.Seeothercard && screw.gameState != Screw.GameState.Choosing2 && screw.gameState != Screw.GameState.Lookaround)
             {
                 StartCoroutine(screw.navigatedCards(currentTurn));
             }
@@ -137,7 +149,7 @@ namespace GameSystem
             }
             if (screw.gameState == Screw.GameState.Action || inputHandler.GetKeyDown(KeyCode.Alpha2, currentTurn))
             {
-                if (screw.gameState !=Screw.GameState.Action)
+                if (screw.gameState != Screw.GameState.Action)
                 {
                     screw.throwcard(screw.pickedcard);
                     actionnumber = isaction();
@@ -151,7 +163,7 @@ namespace GameSystem
                 {
                     screw.pickedcard = null;
                     screw.gameState = Screw.GameState.NextTurn;
-                }                
+                }
             }
         }
         public int isaction()
@@ -164,7 +176,7 @@ namespace GameSystem
                     return i;
                 }
             }
-            Debug.Log("not a action card : "+screw.discardpile.Last.Value.name);
+            Debug.Log("not a action card : " + screw.discardpile.Last.Value.name);
             return -1;
         }
         private IEnumerator WaitAndAllowClickAgain(float waitTime)
@@ -176,11 +188,11 @@ namespace GameSystem
         }
         public void actioncall(int player, int number)
         {
-            if(number==0 || number ==1)
+            if (number == 0 || number == 1)
             {
                 StartCoroutine(screw.seeurcard(player));
             }
-            else if (number ==2|| number==3)
+            else if (number == 2 || number == 3)
             {
                 screw.gameState = Screw.GameState.Seeothercard;
                 if (inputHandler.GetKeyDown(KeyCode.Return, player))
@@ -189,24 +201,24 @@ namespace GameSystem
                 }
                 StartCoroutine(screw.navigateplayers(player));
             }
-            else if (number ==4)
+            else if (number == 4)
             {
                 screw.gameState = Screw.GameState.Basra;
             }
-            else if (number ==5)
+            else if (number == 5)
             {
                 Debug.Log("lookaround");
                 screw.gameState = Screw.GameState.Lookaround;
                 StartCoroutine(screw.lookaround(player));
             }
-            else 
+            else
             {
                 swapwplayer();
             }
         }
         public void matching()
         {
-            if(screw.gameState==Screw.GameState.Basra)
+            if (screw.gameState == Screw.GameState.Basra)
             {
                 Debug.Log("basra");
             }
@@ -227,40 +239,53 @@ namespace GameSystem
                 }
                 currentTurn = (currentTurn + 1) % noOfPlayers;
                 //arrowdirection();
-                return currentTurn; 
+                return currentTurn;
             }
             return currentTurn;
         }
         public void swapwplayer()
         {
-            if(screw.gameState==Screw.GameState.Choosing2)
+            if (screw.gameState == Screw.GameState.Choosing2)
             {
                 StartCoroutine(screw.navigateplayers(currentTurn));
             }
-            if(screw.gameState!=Screw.GameState.Choosing2)
+            if (screw.gameState != Screw.GameState.Choosing2)
             {
                 screw.gameState = Screw.GameState.Choosing1;
             }
-            if(screw.gameState==Screw.GameState.Choosing1&&inputHandler.GetKeyDown(KeyCode.Return,currentTurn))
+            if (screw.gameState == Screw.GameState.Choosing1 && inputHandler.GetKeyDown(KeyCode.Return, currentTurn))
             {
                 card1 = screw.hands[currentTurn][screw.navigatedCardindex];
                 screw.gameState = Screw.GameState.Choosing2;
             }
-            else if(screw.gameState==Screw.GameState.Choosing2&&inputHandler.GetKeyDown(KeyCode.Return,currentTurn))
+            else if (screw.gameState == Screw.GameState.Choosing2 && inputHandler.GetKeyDown(KeyCode.Return, currentTurn))
             {
                 card2 = screw.hands[currentTurn][screw.navigatedCardindex];
                 StopCoroutine(screw.navigateplayers(currentTurn));
-                screw.hands[currentTurn][screw.navigatedCardindex]=screw.hands[screw.naviagedplayerindex][screw.navigatedplayercard];
+                screw.hands[currentTurn][screw.navigatedCardindex] = screw.hands[screw.naviagedplayerindex][screw.navigatedplayercard];
                 screw.hands[screw.naviagedplayerindex][screw.navigatedplayercard] = card1;
                 screw.cardtransformations.moveandrotate(screw.hands, currentTurn, screw.navigatedCardindex, screw.cardtransformations.handspostions, screw.cardtransformations.playerRotations);
                 screw.cardtransformations.moveandrotate(screw.hands, screw.naviagedplayerindex, screw.navigatedplayercard, screw.cardtransformations.handspostions, screw.cardtransformations.playerRotations);
                 screw.gameState = Screw.GameState.NextTurn;
-                screw.pickedcard = null;   
+                screw.pickedcard = null;
             }
         }
         public void UpdatecardPositions()
         {
             screw.cardtransformations.MovetoPostion(screw.hands);
         }
+        public override void killGame()
+        {
+            //screw.origin.GetComponent<NetworkObject>().Despawn(true);
+            Debug.Log(screw.holder.Count);
+            for (int i = 0; i < screw.holder.Count; i++)
+            {
+                Debug.Log("name : " + screw.holder[i].name);
+                screw.holder[i].GetComponent<NetworkObject>().Despawn(true);
+            }
+            gameObject.GetComponent<NetworkObject>().Despawn(true);
+            gameMenu.SetActive(true);
+        }
+        
     }
 }

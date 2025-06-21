@@ -20,7 +20,7 @@ public class Screw: CardGame
     public int naviagedplayerindex, navigatedplayercard, lookaroundcounter = 0;
     bool lookedaround = false;
     public int lookaroundplayercounter = 0;
-    GameObject origin;
+    public GameObject origin;
 
     public enum GameState
     {
@@ -47,8 +47,10 @@ public class Screw: CardGame
         origin = GameObject.Instantiate(Resources.Load<GameObject>("Prefabs_N/Screw_CardDeck_N"));
         origin.GetComponent<NetworkObject>().Spawn();
         GameObjects = spawnobjects(prefabpath);
+        holder = new List<GameObject>();
         for (int i = 0; i < GameObjects.Count; i++)
         {
+            holder.Add(GameObjects[i]);
             GameObjects[i].transform.SetParent(origin.transform);
         }
         shuffledeck(GameObjects);

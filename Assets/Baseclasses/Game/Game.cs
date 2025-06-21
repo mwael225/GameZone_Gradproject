@@ -12,7 +12,7 @@ namespace GameSystem
         //protected DB_Manager db_manager;
 
         public InputHandler inputHandler;
-        protected List<GameObject> GameObjects;
+        public List<GameObject> GameObjects;
 
         public Game(string name, int numberOfPlayers, InputHandler inputHandler)
         {

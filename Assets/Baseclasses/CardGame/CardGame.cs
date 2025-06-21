@@ -16,22 +16,23 @@ namespace GameSystem
         public List<int> selectedCardsindex ;
         public GameObject pickedcard;
         protected float discard_pileSpacingZ = 0.0f;
+        public List<GameObject> holder;
 
-        public CardGame(string name, int numberOfPlayers,InputHandler inputHandler) : base(name, numberOfPlayers,inputHandler)
+        public CardGame(string name, int numberOfPlayers, InputHandler inputHandler) : base(name, numberOfPlayers, inputHandler)
         {
             cardtransformations = new CardTransformations();
             if (inputHandler != null)
             {
                 Debug.Log("Input handler is not null");
             }
-            
+
             deck = new List<GameObject>();
-            hands =new()
+            hands = new()
                 {
                 new List<GameObject> {},new List<GameObject> {},new List<GameObject> {},new List<GameObject> {},
                 };
             discardpile = new LinkedList<GameObject>();
-            
+
         }
         public virtual void shuffledeck(List<GameObject> cards)
         {

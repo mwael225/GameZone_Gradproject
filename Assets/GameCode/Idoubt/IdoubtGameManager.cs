@@ -1,12 +1,8 @@
 using System;
 using System.Collections.Generic;
-using System.Data.Common;
-using System.Runtime.ExceptionServices;
 using TMPro;
 using Unity.Netcode;
-using UnityEditor.PackageManager;
 using UnityEngine;
-using UnityEngine.Rendering;
 using UnityEngine.UI;
 namespace GameSystem
 {
@@ -23,6 +19,7 @@ namespace GameSystem
         private InputHandler inputHandler;
         private bool isOpen = false;
         private int currentIndex = 0;
+        GameObject gameMenu;
         List<KeyCode> keyCodes = new List<KeyCode>
         {
             KeyCode.C,
@@ -33,7 +30,8 @@ namespace GameSystem
             KeyCode.A,
             KeyCode.D,
             KeyCode.P,
-            KeyCode.Return
+            KeyCode.Return,
+            KeyCode.Alpha9
         };
         enum IdoubtGameState
         {
@@ -67,6 +65,8 @@ namespace GameSystem
             //HighlightOption(currentIndex);
             idoubt.DebugLog2("current turn: " + currentTurn);
             UpdateoverlayClientRpc(currentTurn, 0, false);
+            gameMenu = GameObject.Find("GameMenu(Clone)");
+            gameMenu.SetActive(false);
         }
         public void Update()
         {
@@ -81,6 +81,12 @@ namespace GameSystem
             if (idoubt.gamestate == "end")
             {
                 idoubt.DebugLog2("Game Over");
+                return;
+            }
+            if (inputHandler.GetKeyDown(KeyCode.Alpha9, 0))
+            {
+                StopAllCoroutines();
+                killGame();
                 return;
             }
 
@@ -145,7 +151,7 @@ namespace GameSystem
                     if (inputHandler.GetKeyDown(KeyCode.C, currentTurn) && isclaimopen())
                     {
                         setdropdowntrueClientRpc(currentTurn);
-                        CanclaimClientRpc(currentTurn,false);
+                        CanclaimClientRpc(currentTurn, false);
                         idoubt.gamestate = "claiming";
                     }
                 }
@@ -171,7 +177,7 @@ namespace GameSystem
                 islying = idoubt.doubt(currentTurn);
                 currentTurn = NextTurn(idoubt.numberOfPlayers);
             }
-            if (inputHandler.GetKeyDown(KeyCode.P, currentTurn)&!isclaimopen())
+            if (inputHandler.GetKeyDown(KeyCode.P, currentTurn) & !isclaimopen())
             {
                 passcheck[currentTurn] = true;
                 currentTurn = NextTurn(idoubt.numberOfPlayers);
@@ -206,12 +212,12 @@ namespace GameSystem
                 else
                 {
                     //turnvisual();
-                    UpdateoverlayClientRpc(currentTurn-1, idoubt.prev_play.Count,false);
+                    UpdateoverlayClientRpc(currentTurn - 1, idoubt.prev_play.Count, false);
                     setdropdowntrueClientRpc((currentTurn - 1) % noOfPlayers);
                     return (currentTurn - 1) % noOfPlayers;
                 }
             }
-            UpdateoverlayClientRpc((currentTurn+1)%noOfPlayers, idoubt.prev_play.Count,true,idoubt.claim,currentTurn);
+            UpdateoverlayClientRpc((currentTurn + 1) % noOfPlayers, idoubt.prev_play.Count, true, idoubt.claim, currentTurn);
             //turnvisual();
             return (currentTurn + 1) % noOfPlayers;
         }
@@ -267,7 +273,7 @@ namespace GameSystem
                     }
                 }
             }
-            CanclaimClientRpc(currentTurn,true);
+            CanclaimClientRpc(currentTurn, true);
             return true;
         }
         [ClientRpc]
@@ -293,14 +299,14 @@ namespace GameSystem
             Transform x = temp.transform.GetChild(2);
             //x.gameObject.SetActive(true);
             x.GetChild(0).GetComponent<TMP_Text>().text = claim + " Table ";
-            x.GetChild(1).GetComponent<TMP_Text>().text = "Turn: " + (player+1);
+            x.GetChild(1).GetComponent<TMP_Text>().text = "Turn: " + (player + 1);
             if (isclaim)
             {
-                x.GetChild(2).GetComponent<TMP_Text>().text = "player" + (claimer+1) + ": " + noofcards + " " + claim;
+                x.GetChild(2).GetComponent<TMP_Text>().text = "player" + (claimer + 1) + ": " + noofcards + " " + claim;
             }
             else
             {
-                x.GetChild(2).GetComponent<TMP_Text>().text ="";
+                x.GetChild(2).GetComponent<TMP_Text>().text = "";
             }
 
         }
@@ -333,7 +339,7 @@ namespace GameSystem
             }
         }
         [ClientRpc]
-        void CanclaimClientRpc(int clientid,bool canclaim)
+        void CanclaimClientRpc(int clientid, bool canclaim)
         {
             if (clientid == currentTurn)
             {
@@ -351,6 +357,18 @@ namespace GameSystem
         {
             idoubt.claim = claim;
             idoubt.gamestate = "navigating";
+        }
+        public override void killGame()
+        {
+            //screw.origin.GetComponent<NetworkObject>().Despawn(true);
+            Debug.Log(idoubt.holder.Count);
+            for (int i = 0; i < idoubt.holder.Count; i++)
+            {
+                Debug.Log("name : " + idoubt.holder[i].name);
+                idoubt.holder[i].GetComponent<NetworkObject>().Despawn(true);
+            }
+            gameObject.GetComponent<NetworkObject>().Despawn(true);
+            gameMenu.SetActive(true);
         }
 }
 }

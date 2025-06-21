@@ -49,7 +49,7 @@ public class spawnplayers : NetworkBehaviour
         Debug.Log("Player"+clientId+" prefab instantiated and spawned.");
         Debug.Log("Total connected clients: " + NetworkManager.Singleton.ConnectedClients.Count);
         }
-        if (NetworkManager.Singleton.ConnectedClients.Count ==1&& NetworkManager.Singleton.IsServer)
+        if (NetworkManager.Singleton.ConnectedClients.Count ==2&& NetworkManager.Singleton.IsServer)
         {
             Debug.Log("Spawning game manager as two players are connected.");
             GameObject instance = Instantiate(GameMenu);

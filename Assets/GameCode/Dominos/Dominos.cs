@@ -36,9 +36,11 @@ public class Dominos:CardGame
         origin = GameObject.Instantiate(Resources.Load<GameObject>("Prefabs_N/DominoTable_N"));
         origin.GetComponent<NetworkObject>().Spawn();
         GameObjects=spawnobjects("Dominos");
+        holder=new List<GameObject>();
         //List<GameObject>notused =prefabtoGamebojects("Prefabs/DominoBoard");
-        for(int i=0;i<GameObjects.Count;i++)
+        for (int i = 0; i < GameObjects.Count; i++)
         {
+            holder.Add(GameObjects[i]);
             GameObjects[i].transform.SetParent(origin.transform);
         }
         shuffledeck(GameObjects);

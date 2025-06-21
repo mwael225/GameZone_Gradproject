@@ -17,8 +17,10 @@ public class Idoubt :CardGame
         origin = GameObject.Instantiate(Resources.Load<GameObject>("Prefabs_N/Card_Deck_N"));
         origin.GetComponent<NetworkObject>().Spawn();
         GameObjects=spawnobjects("Card_Deck");
-        for(int i=0;i<GameObjects.Count;i++)
+        holder = new List<GameObject>();
+        for (int i = 0; i < GameObjects.Count; i++)
         {
+            holder.Add(GameObjects[i]);
             GameObjects[i].transform.SetParent(origin.transform);
         }
         shuffledeck(GameObjects);

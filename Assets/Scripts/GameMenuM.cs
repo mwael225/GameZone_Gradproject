@@ -71,6 +71,6 @@ public class GameMenuM : NetworkBehaviour
             instance.GetComponent<DominosGameManager>().enabled = true;
         else if (navindex == 2)
             instance.GetComponent<IdoubtGameManager>().enabled = true;
-        transform.gameObject.SetActive(false);
+        //transform.gameObject.SetActive(false);
     }
 }

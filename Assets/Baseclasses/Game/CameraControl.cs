@@ -20,6 +20,10 @@ namespace GameSystem
                 playercamera.gameObject.SetActive(false);
             }
         }
+        void switchtoMaincamera()
+        {
+            
+        }
     }
 
 }

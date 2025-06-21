@@ -30,12 +30,13 @@ public class LobbyManager : MonoBehaviour
     public TMP_InputField tmpInputField; // Reference to TMP_InputField
 
     public Player player;
-    
+    public Lobby thislobby;
+
     List<Lobby> lobbies;
     // Start is called once before the first execution of Update after the MonoBehaviour is created
     async void Start()
     {
-        player = new Player();
+        //player = new Player();
         if (Instance == null)
         {
             Instance = this; // Set this as the instance
@@ -48,28 +49,21 @@ public class LobbyManager : MonoBehaviour
         await UnityServices.InitializeAsync();
         AuthenticationService.Instance.SignedIn += () => Debug.Log("Signed in as: " + AuthenticationService.Instance.PlayerId);
         await AuthenticationService.Instance.SignInAnonymouslyAsync();
-        createButton.onClick.AddListener(async () =>
+        createButton.onClick.AddListener(() =>
         {
-            //entergame();
-            string relaycode = await StartHostWithRelay(4, "udp");
-            createlobby(relaycode);
+            entergame("true");
         });
-        StartCoroutine(refresh());
+        joinbutton.onClick.AddListener(() =>
+        {
+            listlobbies();
+        });
     }
     // Update is called once per frame
     void Update()
     {
-        buttonsmanager();
+        
     }
-    void buttonsmanager()
-    {
-        foreach (Transform child in content)
-        {
-            Button button = child.GetComponent<Button>();
-            button.onClick.AddListener(() => joinlobby(lobbies[child.GetSiblingIndex()]));
-        }
 
-    }
     public async Task<string> StartHostWithRelay(int maxConnections, string connectionType)
     {
         await UnityServices.InitializeAsync();
@@ -86,28 +80,54 @@ public class LobbyManager : MonoBehaviour
     }
     public async Task<bool> StartClientWithRelay(string joinCode, string connectionType)
     {
-        await UnityServices.InitializeAsync();
+        Debug.Log("Joining relay with code: " + joinCode+"in scene "+SceneManager.GetActiveScene().name+" connection type "+connectionType);
+        /*await UnityServices.InitializeAsync();
         if (!AuthenticationService.Instance.IsSignedIn)
         {
             await AuthenticationService.Instance.SignInAnonymouslyAsync();
-        }
-        var allocation = await RelayService.Instance.JoinAllocationAsync(joinCode: joinCode);
+        }*/
+        Debug.Log("why + "+joinCode);
+        var allocation = await RelayService.Instance.JoinAllocationAsync(joinCode);
+        await WaitForNetworkSingletonAsync();
         NetworkManager.Singleton.GetComponent<UnityTransport>().SetRelayServerData(AllocationUtils.ToRelayServerData(allocation, connectionType));
         return !string.IsNullOrEmpty(joinCode) && NetworkManager.Singleton.StartClient();
     }
-    void listbuttons(List<Lobby> lobbies)
+    public async Task WaitForNetworkSingletonAsync(float timeout = 10f)
+    {
+        float elapsedTime = 0f;
+        while (NetworkManager.Singleton == null && elapsedTime < timeout)
+        {
+            await Task.Delay(100);  // Wait for 100ms before checking again
+            elapsedTime += 0.1f;
+        }
+        if (NetworkManager.Singleton == null)
+        {
+            Debug.LogError("Timed out waiting for NetworkManager.Singleton.");
+        }
+        else
+        {
+            Debug.Log("NetworkManager.Singleton is initialized.");
+        }
+    }
+    void listbuttons()
     {
         DestroyAll(content);
         if (lobbies != null)
         {
             for (int i = 0; i < lobbies.Count; i++)
             {
-                Debug.Log(lobbies[i].Name);
-                GameObject newButton = Instantiate(buttonPrefab, content);
-                Button button = newButton.GetComponent<Button>();
-                button.GetComponentInChildren<TMP_Text>().text = lobbies[i].Name+" "+lobbies[i].Data.TryGetValue("code", out DataObject dataObject);
-                //Debug.Log(dataObject.Value); 
-                //Debug.Log("button name: " + lobbies[i].Name);
+            int index = i; // Capture index, not i
+            GameObject newButton = Instantiate(buttonPrefab, content);
+            Button button = newButton.GetComponent<Button>();
+            button.GetComponentInChildren<TMP_Text>().text = lobbies[index].Name + " ";
+            button.onClick.AddListener(() =>
+            {
+                Debug.Log("index: " + index);
+                Debug.Log("lobby name: " + lobbies[index].Name);
+                string relaycode = lobbies[index].Data["code"].Value;
+                Debug.Log("client : " + relaycode);
+                entergame("false", relaycode);
+            });
             }
         }
     }
@@ -139,12 +159,14 @@ public class LobbyManager : MonoBehaviour
             {
                 Lobby lobby = await LobbyService.Instance.CreateLobbyAsync(tmpInputField.text, 4, lobbyOptions);
                 createdlobby = true; // Set the flag to true after creating the lobby
+                thislobby = lobby;
             }
             catch (LobbyServiceException e)
             {
                 Debug.LogError("Failed to create lobby: " + e.Message);
             }
         }
+        
 
     }
     public async void listlobbies()
@@ -153,28 +175,28 @@ public class LobbyManager : MonoBehaviour
         if (response.Results.Count > 0)
         {
             lobbies = response.Results;
-            listbuttons(lobbies);
+            listbuttons();
         }
     }
-    IEnumerator refresh()
-    {
-        while (true)
-        {
-            yield return new WaitForSeconds(10f);
-            listlobbies();
-        }
-    }
-    void joinlobby(Lobby lobby)
-    {
-        Debug.Log("joining :"+lobby.Name);
-        lobby.Data.TryGetValue("code", out DataObject dataObject);
-        Debug.Log(dataObject.Value);
-    }
-    void entergame()
+   async void entergame(string host="false", string relaycode="")
     {
         SceneManager.LoadScene("room");
+        if (host == "false")
+        {
+            Debug.Log("relay code is : "+relaycode);
+            bool x = await StartClientWithRelay(relaycode, "udp");
+            Debug.Log(x);
+        }
+        else
+        {
+            string code = await StartHostWithRelay(4, "udp");
+            Debug.Log("host code: " + code);
+            createlobby(code);
+        }
+
     }
-    /*private IEnumerator LobbyHeartbeatCoroutine(Lobby lobby)
+    
+    private IEnumerator LobbyHeartbeatCoroutine(Lobby lobby)
     {
     const float heartbeatInterval = 15f;
 
@@ -187,7 +209,7 @@ public class LobbyManager : MonoBehaviour
 
         yield return new WaitForSeconds(heartbeatInterval);
     }
-    }*/
+    }
 
 
 }
