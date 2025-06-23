@@ -4,12 +4,9 @@
 Welcome to **GameZone**, a diverse collection of classic and regional mini-games!  
 
 ## Featured Games  
--  **Chess**  
--  **Checkers**  
--  **الشايب (Al-Shayeb)**  
--  **اشك (Ashk)**  
 -  **سكرو (Skrew)** *(Fan vesrion)*  
--  **Dominos**  
+-  **Dominoes**  
+-  **i doubt**  
 
 ## Project Nature  
 GameZone is a **non-commercial, fan-based project** developed for entertainment purposes. All original game concepts remain the property of their respective creators.  
